@@ -2,8 +2,7 @@
 
 import { createContext, use, useEffect, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import * as api from "@/lib/api"
-import { getToken, removeToken, setToken } from "@/lib/token"
+import * as authClient from "../auth-client"
 import type { User } from "../types"
 
 type AuthState = {
@@ -30,25 +29,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [, startTransition] = useTransition()
   const [isLoading, setIsLoading] = useState(true)
 
-  // Restore session from token cookie on mount
+  // Restore session on mount via httpOnly cookie
   useEffect(() => {
-    const token = getToken()
-    if (!token) {
-      setIsLoading(false)
-      return
-    }
-    api
-      .getMe(token)
+    authClient
+      .getMe()
       .then(setUser)
-      .catch(() => removeToken())
+      .catch(() => {})
       .finally(() => setIsLoading(false))
   }, [])
 
   async function login(email: string, password: string) {
     setIsLoading(true)
     try {
-      const { token, user: loggedIn } = await api.login(email, password)
-      setToken(token)
+      const loggedIn = await authClient.login(email, password)
       setUser(loggedIn)
       startTransition(() => router.push("/"))
     } finally {
@@ -59,8 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signup(email: string, password: string, name: string) {
     setIsLoading(true)
     try {
-      const { token, user: created } = await api.signup(email, password, name)
-      setToken(token)
+      const created = await authClient.signup(email, password, name)
       setUser(created)
       startTransition(() => router.push("/onboarding"))
     } finally {
@@ -69,8 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
-    await api.logout()
-    removeToken()
+    await authClient.logout()
     setUser(null)
     startTransition(() => router.push("/login"))
   }

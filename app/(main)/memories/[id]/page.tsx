@@ -1,10 +1,11 @@
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { cookies } from "next/headers"
 import { notFound } from "next/navigation"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { MemoriesEmptyState, MemoriesTimeline } from "@/features/memories"
-import * as api from "@/lib/api"
+import { getCompanion } from "@/features/companions/queries"
+import { getMemories } from "@/features/memories/queries"
 
 export default async function MemoriesPage({
   params,
@@ -12,28 +13,31 @@ export default async function MemoriesPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const token = (await cookies()).get("auth-token")?.value
   const [memories, companion] = await Promise.all([
-    api.getMemories(id, token),
-    api.getCompanion(id, token),
+    getMemories(id),
+    getCompanion(id),
   ])
 
   if (!companion) notFound()
 
   return (
     <div className="mx-auto max-w-lg py-4">
-      <header className="flex items-center gap-3 px-4 pb-4">
+      <header className="flex items-center gap-3 px-4 pb-6">
         <Button asChild variant="ghost" size="icon" className="shrink-0">
-          <Link href={`/companions/${companion.id}`}>
+          <Link href="/">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div>
-          <h1 className="text-lg font-bold">
-            Memories with {companion.name}
+        <Avatar className="h-10 w-10 border-2 border-primary/20">
+          <AvatarImage src={companion.avatarUrl} alt={companion.name} />
+          <AvatarFallback>{companion.name[0]}</AvatarFallback>
+        </Avatar>
+        <div className="min-w-0">
+          <h1 className="truncate text-lg font-bold leading-tight">
+            {companion.name}
           </h1>
           <p className="text-xs text-muted-foreground">
-            {memories.length} {memories.length === 1 ? "memory" : "memories"} saved
+            {memories.length} {memories.length === 1 ? "memory" : "memories"}
           </p>
         </div>
       </header>

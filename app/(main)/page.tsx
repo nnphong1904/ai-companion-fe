@@ -1,17 +1,17 @@
-import { cookies } from "next/headers"
-import { CompanionsGrid } from "@/components/companion"
+import { CompanionsGrid } from "@/features/companions"
 import { StoriesSection } from "@/features/stories"
-import * as api from "@/lib/api"
+import { getMyCompanions, getAllCompanions } from "@/features/companions/queries"
+import { getStories } from "@/features/stories/queries"
 
 export default async function DashboardPage() {
-  const token = (await cookies()).get("auth-token")?.value
   const [myCompanions, allCompanions, stories] = await Promise.all([
-    api.getMyCompanions(token),
-    api.getAllCompanions(token),
-    api.getStories(token),
+    getMyCompanions(),
+    getAllCompanions(),
+    getStories().catch(() => []),
   ])
 
-  const hasMore = allCompanions.length > myCompanions.length
+  const myIds = new Set(myCompanions.map((c) => c.id))
+  const availableCompanions = allCompanions.filter((c) => !myIds.has(c.id))
 
   return (
     <div className="space-y-8 py-6">
@@ -21,7 +21,7 @@ export default async function DashboardPage() {
 
       {stories.length > 0 ? <StoriesSection initialStories={stories} /> : null}
 
-      <CompanionsGrid companions={myCompanions} showAdd={hasMore} />
+      <CompanionsGrid companions={myCompanions} availableCompanions={availableCompanions} />
     </div>
   )
 }

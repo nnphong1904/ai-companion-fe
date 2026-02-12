@@ -1,10 +1,9 @@
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { cookies } from "next/headers"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { CompanionProfileContent } from "@/components/companion"
-import * as api from "@/lib/api"
+import { CompanionProfileContent } from "@/features/companions"
+import { getCompanion } from "@/features/companions/queries"
 
 export default async function CompanionPage({
   params,
@@ -12,8 +11,7 @@ export default async function CompanionPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const token = (await cookies()).get("auth-token")?.value
-  const companion = await api.getCompanion(id, token)
+  const companion = await getCompanion(id)
 
   if (!companion) notFound()
 

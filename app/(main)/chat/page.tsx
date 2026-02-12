@@ -1,15 +1,13 @@
 import { MessageCircle } from "lucide-react"
 import Link from "next/link"
-import { cookies } from "next/headers"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { MoodBadge } from "@/features/mood"
 import { formatRelativeTime } from "@/lib/format"
-import * as api from "@/lib/api"
+import { getMyCompanions } from "@/features/companions/queries"
 
 export default async function ChatIndexPage() {
-  const token = (await cookies()).get("auth-token")?.value
-  const companions = await api.getMyCompanions(token)
+  const companions = await getMyCompanions()
 
   return (
     <div className="py-6">

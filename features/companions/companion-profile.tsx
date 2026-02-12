@@ -13,7 +13,7 @@ export function CompanionProfileContent({
   onNavigate,
 }: {
   companion: Companion
-  onNavigate?: () => void
+  onNavigate?: (href: string) => void
 }) {
   return (
     <div className="flex flex-col items-center gap-6 px-4 pt-4">
@@ -34,14 +34,20 @@ export function CompanionProfileContent({
       <RelationshipBar level={companion.relationshipLevel} className="w-full max-w-xs" />
 
       <div className="flex w-full max-w-xs gap-3">
-        <Button asChild className="flex-1" onClick={onNavigate}>
-          <Link href={`/chat/${companion.id}`}>
+        <Button asChild className="flex-1">
+          <Link
+            href={`/chat/${companion.id}`}
+            onClick={onNavigate ? (e) => { e.preventDefault(); onNavigate(`/chat/${companion.id}`) } : undefined}
+          >
             <MessageCircle className="mr-2 h-4 w-4" />
             Chat
           </Link>
         </Button>
-        <Button asChild variant="secondary" className="flex-1" onClick={onNavigate}>
-          <Link href={`/memories/${companion.id}`}>
+        <Button asChild variant="secondary" className="flex-1">
+          <Link
+            href={`/memories/${companion.id}`}
+            onClick={onNavigate ? (e) => { e.preventDefault(); onNavigate(`/memories/${companion.id}`) } : undefined}
+          >
             <BookOpen className="mr-2 h-4 w-4" />
             Memories
           </Link>

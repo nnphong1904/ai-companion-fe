@@ -1,52 +1,36 @@
 "use client"
 
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState, useTransition } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { CompanionPickCard } from "@/components/companion"
-import * as api from "@/lib/api"
-import { getToken } from "@/lib/token"
+import { CompanionPickCard } from "@/features/companions"
+import { selectCompanions } from "@/features/companions/actions"
 import type { Companion } from "@/types/shared"
 
-export function ChooseCompanionStep() {
+export function ChooseCompanionStep({
+  companions,
+}: {
+  companions: Companion[]
+}) {
   const router = useRouter()
-  const [companions, setCompanions] = useState<Companion[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [isLoading, setIsLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
-  const [isSelecting, setIsSelecting] = useState(false)
-
-  useEffect(() => {
-    const token = getToken() ?? undefined
-    api.getAllCompanions(token).then((data) => {
-      setCompanions(data)
-      setIsLoading(false)
-    })
-  }, [])
 
   function toggleCompanion(id: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
   }
 
-  async function handleConfirm() {
-    if (selectedIds.size === 0 || isSelecting) return
-    setIsSelecting(true)
-    try {
-      const token = getToken() ?? undefined
-      await api.selectCompanions([...selectedIds], token)
-      startTransition(() => router.push("/"))
-    } finally {
-      setIsSelecting(false)
-    }
+  function handleConfirm() {
+    if (selectedIds.size === 0 || isPending) return
+    startTransition(async () => {
+      await selectCompanions([...selectedIds])
+      router.push("/")
+    })
   }
 
   return (
@@ -59,35 +43,23 @@ export function ChooseCompanionStep() {
       </div>
 
       <div className="space-y-3">
-        {isLoading
-          ? Array.from({ length: 5 }, (_, i) => (
-              <Card key={i} className="py-0">
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div className="h-14 w-14 shrink-0 animate-pulse rounded-full bg-muted" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                    <div className="h-3 w-full animate-pulse rounded bg-muted" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          : companions.map((companion) => (
-              <CompanionPickCard
-                key={companion.id}
-                companion={companion}
-                isSelected={selectedIds.has(companion.id)}
-                onSelect={() => toggleCompanion(companion.id)}
-              />
-            ))}
+        {companions.map((companion) => (
+          <CompanionPickCard
+            key={companion.id}
+            companion={companion}
+            isSelected={selectedIds.has(companion.id)}
+            onSelect={() => toggleCompanion(companion.id)}
+          />
+        ))}
       </div>
 
       <Button
         size="lg"
-        disabled={selectedIds.size === 0 || isSelecting || isPending}
+        disabled={selectedIds.size === 0 || isPending}
         onClick={handleConfirm}
         className="w-full"
       >
-        {isSelecting ? "Setting up..." : "Start your journey"}
+        {isPending ? "Setting up..." : "Start your journey"}
       </Button>
     </div>
   )

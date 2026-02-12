@@ -1,4 +1,4 @@
-import { CompanionCardSkeleton } from "@/components/companion"
+import { CompanionCardSkeleton } from "@/features/companions"
 import { StoryRowSkeleton } from "@/features/stories"
 
 export function DashboardSkeleton() {

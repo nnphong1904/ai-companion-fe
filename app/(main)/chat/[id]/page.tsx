@@ -1,7 +1,7 @@
-import { cookies } from "next/headers"
 import { notFound } from "next/navigation"
 import { ChatRoom } from "@/features/chat"
-import * as api from "@/lib/api"
+import { getCompanion } from "@/features/companions/queries"
+import { getMessages } from "@/features/chat/queries"
 
 export default async function ChatPage({
   params,
@@ -9,10 +9,9 @@ export default async function ChatPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const token = (await cookies()).get("auth-token")?.value
   const [companion, messages] = await Promise.all([
-    api.getCompanion(id, token),
-    api.getMessages(id, token),
+    getCompanion(id),
+    getMessages(id),
   ])
 
   if (!companion) notFound()

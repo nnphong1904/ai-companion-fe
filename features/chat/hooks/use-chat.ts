@@ -1,36 +1,18 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import * as api from "@/lib/api"
-import { getToken } from "@/lib/token"
+import { useRef, useState } from "react"
+import { sendMessage as sendMessageAction, saveMemory as saveMemoryAction } from "@/features/chat/actions"
 import type { Message } from "../types"
 
 type UseChatOptions = {
   companionId: string
-  initialMessages?: Message[]
+  initialMessages: Message[]
 }
 
 export function useChat({ companionId, initialMessages }: UseChatOptions) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages ?? [])
-  const [isLoading, setIsLoading] = useState(!initialMessages)
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [isSending, setIsSending] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (initialMessages) return
-    let cancelled = false
-    setIsLoading(true)
-    const token = getToken() ?? undefined
-    api.getMessages(companionId, token).then((msgs) => {
-      if (!cancelled) {
-        setMessages(msgs)
-        setIsLoading(false)
-      }
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [companionId, initialMessages])
 
   function scrollToBottom() {
     requestAnimationFrame(() => {
@@ -54,11 +36,9 @@ export function useChat({ companionId, initialMessages }: UseChatOptions) {
     scrollToBottom()
 
     try {
-      const token = getToken() ?? undefined
-      const { userMessage, companionMessage } = await api.sendMessage(
+      const { userMessage, companionMessage } = await sendMessageAction(
         companionId,
         content.trim(),
-        token,
       )
 
       setMessages((prev) => {
@@ -73,23 +53,15 @@ export function useChat({ companionId, initialMessages }: UseChatOptions) {
 
   async function saveMemory(messageId: string) {
     const msg = messages.find((m) => m.id === messageId)
-    if (!msg) return
+    if (!msg || msg.isMemory) return
 
-    if (msg.isMemory) {
-      // Already saved — no unsave for now (would need memory ID tracking)
-      return
-    }
-
-    // Optimistically mark as saved
     setMessages((prev) =>
       prev.map((m) => (m.id === messageId ? { ...m, isMemory: true } : m)),
     )
 
     try {
-      const token = getToken() ?? undefined
-      await api.saveMemory(companionId, msg.content, undefined, token)
+      await saveMemoryAction(companionId, msg.content)
     } catch {
-      // Revert on failure
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, isMemory: false } : m)),
       )
@@ -98,7 +70,7 @@ export function useChat({ companionId, initialMessages }: UseChatOptions) {
 
   return {
     messages,
-    isLoading,
+    isLoading: false,
     isSending,
     scrollRef,
     sendMessage,
