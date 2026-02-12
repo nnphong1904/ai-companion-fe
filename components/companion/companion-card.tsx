@@ -1,10 +1,10 @@
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
-import { MoodBadge } from "@/components/mood-badge"
-import { RelationshipBar } from "@/components/relationship-bar"
-import type { Companion } from "@/types"
+import { MoodBadge } from "@/features/mood"
+import { RelationshipBar } from "@/features/mood"
 import { formatRelativeTime } from "@/lib/format"
+import type { Companion } from "@/types/shared"
 
 export function CompanionCard({ companion }: { companion: Companion }) {
   return (

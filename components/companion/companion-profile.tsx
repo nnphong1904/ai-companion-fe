@@ -4,29 +4,9 @@ import { BookOpen, MessageCircle } from "lucide-react"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import { MoodBadge } from "@/components/mood-badge"
-import { RelationshipBar } from "@/components/relationship-bar"
-import type { Companion } from "@/types"
-
-export function CompanionProfileSkeleton() {
-  return (
-    <div className="flex flex-col items-center gap-6 px-4 pt-8">
-      <Skeleton className="h-28 w-28 rounded-full" />
-      <div className="space-y-2 text-center">
-        <Skeleton className="mx-auto h-7 w-32" />
-        <Skeleton className="mx-auto h-4 w-64" />
-        <Skeleton className="mx-auto h-4 w-48" />
-      </div>
-      <Skeleton className="h-6 w-20 rounded-full" />
-      <Skeleton className="h-12 w-full max-w-xs" />
-      <div className="flex w-full max-w-xs gap-3">
-        <Skeleton className="h-11 flex-1" />
-        <Skeleton className="h-11 flex-1" />
-      </div>
-    </div>
-  )
-}
+import { MoodBadge } from "@/features/mood"
+import { RelationshipBar } from "@/features/mood"
+import type { Companion } from "@/types/shared"
 
 export function CompanionProfileContent({
   companion,

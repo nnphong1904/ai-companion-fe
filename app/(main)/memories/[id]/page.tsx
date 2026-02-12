@@ -1,32 +1,12 @@
 "use client"
 
-import { ArrowLeft, Brain } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { use, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { MemoryCard } from "@/components/memory-card"
-import { MemorySkeleton } from "@/components/loading-skeleton"
+import { MemoryCard, MemorySkeleton, MemoriesEmptyState } from "@/features/memories"
 import * as api from "@/lib/api"
 import type { Companion, Memory } from "@/types"
-
-function EmptyState({ companionId }: { companionId: string }) {
-  return (
-    <div className="flex flex-col items-center gap-4 px-4 py-20 text-center">
-      <div className="rounded-full bg-muted p-4">
-        <Brain className="h-8 w-8 text-muted-foreground" />
-      </div>
-      <div className="space-y-1">
-        <p className="font-medium">No memories yet</p>
-        <p className="text-sm text-muted-foreground">
-          Start chatting to create some
-        </p>
-      </div>
-      <Button asChild>
-        <Link href={`/chat/${companionId}`}>Start chatting</Link>
-      </Button>
-    </div>
-  )
-}
 
 export default function MemoriesPage({
   params,
@@ -74,7 +54,7 @@ export default function MemoriesPage({
       {isLoading ? (
         <MemorySkeleton />
       ) : memories.length === 0 ? (
-        <EmptyState companionId={id} />
+        <MemoriesEmptyState companionId={id} />
       ) : (
         <div className="relative space-y-4 px-4">
           {/* Timeline line */}

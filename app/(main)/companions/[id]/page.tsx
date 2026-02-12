@@ -4,10 +4,7 @@ import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { use, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import {
-  CompanionProfileContent,
-  CompanionProfileSkeleton,
-} from "@/components/companion-profile"
+import { CompanionProfileContent, CompanionProfileSkeleton } from "@/components/companion"
 import * as api from "@/lib/api"
 import type { Companion } from "@/types"
 

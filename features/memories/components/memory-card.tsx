@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { formatDate } from "@/lib/format"
-import type { Memory } from "@/types"
+import type { Memory } from "../types"
 
 export function MemoryCard({
   memory,

@@ -38,6 +38,14 @@ export async function getMe(): Promise<User> {
   return mockUser
 }
 
+// ─── Onboarding ──────────────────────────────────────────────────────────────
+
+export async function selectCompanion(
+  ...[]: [companionId: string]
+): Promise<void> {
+  await delay(600)
+}
+
 // ─── Companions ──────────────────────────────────────────────────────────────
 
 export async function getCompanions(): Promise<Companion[]> {

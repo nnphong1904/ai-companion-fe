@@ -1,4 +1,4 @@
-import type { Mood } from "@/types"
+import type { Mood } from "../types"
 
 type MoodConfig = {
   emoji: string

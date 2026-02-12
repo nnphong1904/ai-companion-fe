@@ -1,6 +1,6 @@
 import { Progress } from "@/components/ui/progress"
-import { getRelationshipLabel } from "@/lib/mood"
 import { cn } from "@/lib/utils"
+import { getRelationshipLabel } from "../lib/mood"
 
 export function RelationshipBar({
   level,

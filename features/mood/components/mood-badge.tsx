@@ -1,6 +1,6 @@
-import { MOOD_MAP } from "@/lib/mood"
-import type { Mood } from "@/types"
 import { cn } from "@/lib/utils"
+import { MOOD_MAP } from "../lib/mood"
+import type { Mood } from "../types"
 
 export function MoodBadge({ mood, className }: { mood: Mood; className?: string }) {
   const config = MOOD_MAP[mood]

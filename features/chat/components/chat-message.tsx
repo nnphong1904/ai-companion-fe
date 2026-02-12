@@ -2,7 +2,7 @@
 
 import { Star } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { Message } from "@/types"
+import type { Message } from "../types"
 
 export function ChatMessage({
   message,

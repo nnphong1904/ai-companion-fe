@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
-import type { Story } from "@/types"
+import { useEffect, useRef, useState } from "react"
+import type { Story } from "../types"
 
 type UseStoriesViewerArgs = {
   stories: Story[]
@@ -22,31 +22,28 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
   const activeStory = isOpen ? stories[activeStoryIndex] : null
   const activeSlide = activeStory?.slides[activeSlideIndex] ?? null
 
-  const clearTimer = useCallback(() => {
+  function clearTimer() {
     if (timerRef.current) {
       clearInterval(timerRef.current)
       timerRef.current = null
     }
-  }, [])
+  }
 
-  const startTimer = useCallback(
-    (duration: number) => {
-      clearTimer()
-      setProgress(0)
-      const interval = 50
-      timerRef.current = setInterval(() => {
-        setProgress((prev) => {
-          const next = prev + (interval / duration) * 100
-          if (next >= 100) {
-            advanceRef.current?.()
-            return 0
-          }
-          return next
-        })
-      }, interval)
-    },
-    [clearTimer],
-  )
+  function startTimer(duration: number) {
+    clearTimer()
+    setProgress(0)
+    const interval = 50
+    timerRef.current = setInterval(() => {
+      setProgress((prev) => {
+        const next = prev + (interval / duration) * 100
+        if (next >= 100) {
+          advanceRef.current?.()
+          return 0
+        }
+        return next
+      })
+    }, interval)
+  }
 
   // Keep advanceRef in sync — safe inside useEffect
   useEffect(() => {
@@ -78,35 +75,32 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
         setProgress(0)
       }
     }
-  }, [activeStoryIndex, activeSlideIndex, stories, onMarkViewed, clearTimer, startTimer])
+  })
 
-  const open = useCallback(
-    (storyIndex: number) => {
-      setActiveStoryIndex(storyIndex)
-      setActiveSlideIndex(0)
-      setProgress(0)
-      const story = stories[storyIndex]
-      if (story && !story.viewed) {
-        onMarkViewed?.(story.id)
-      }
-      const slideDur = (story?.slides[0]?.duration ?? 5) * 1000
-      startTimer(slideDur)
-    },
-    [stories, onMarkViewed, startTimer],
-  )
+  function open(storyIndex: number) {
+    setActiveStoryIndex(storyIndex)
+    setActiveSlideIndex(0)
+    setProgress(0)
+    const story = stories[storyIndex]
+    if (story && !story.viewed) {
+      onMarkViewed?.(story.id)
+    }
+    const slideDur = (story?.slides[0]?.duration ?? 5) * 1000
+    startTimer(slideDur)
+  }
 
-  const close = useCallback(() => {
+  function close() {
     clearTimer()
     setActiveStoryIndex(-1)
     setActiveSlideIndex(0)
     setProgress(0)
-  }, [clearTimer])
+  }
 
-  const goNext = useCallback(() => {
+  function goNext() {
     advanceRef.current?.()
-  }, [])
+  }
 
-  const goPrev = useCallback(() => {
+  function goPrev() {
     if (activeSlideIndex > 0) {
       const newIndex = activeSlideIndex - 1
       setActiveSlideIndex(newIndex)
@@ -121,16 +115,13 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
       const slide = prevStory?.slides[lastSlideIndex]
       startTimer((slide?.duration ?? 5) * 1000)
     }
-  }, [activeSlideIndex, activeStoryIndex, activeStory, stories, startTimer])
+  }
 
-  const react = useCallback(
-    (emoji: string) => {
-      if (activeStory) {
-        onReact?.(activeStory.id, emoji)
-      }
-    },
-    [activeStory, onReact],
-  )
+  function react(emoji: string) {
+    if (activeStory) {
+      onReact?.(activeStory.id, emoji)
+    }
+  }
 
   return {
     isOpen,

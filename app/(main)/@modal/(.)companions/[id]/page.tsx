@@ -3,10 +3,7 @@
 import { use, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import {
-  CompanionProfileContent,
-  CompanionProfileSkeleton,
-} from "@/components/companion-profile"
+import { CompanionProfileContent, CompanionProfileSkeleton } from "@/components/companion"
 import * as api from "@/lib/api"
 import type { Companion } from "@/types"
 

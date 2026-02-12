@@ -1,6 +1,6 @@
 "use client"
 
-import { BottomNav, DesktopSidebar } from "@/components/bottom-nav"
+import { BottomNav, DesktopSidebar } from "@/components/layout"
 
 export default function MainLayout({
   children,

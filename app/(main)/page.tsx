@@ -1,51 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { CompanionCard } from "@/components/companion-card"
-import { DashboardSkeleton } from "@/components/loading-skeleton"
-import { StoryAvatar } from "@/components/story-avatar"
-import { StoryViewer } from "@/components/story-viewer"
-import { useStoriesViewer } from "@/hooks/use-stories"
+import { CompanionsGrid } from "@/components/companion"
+import { DashboardSkeleton } from "@/components/layout"
+import { StoriesRow, StoryViewer, useStoriesViewer } from "@/features/stories"
 import * as api from "@/lib/api"
 import type { Companion, Story } from "@/types"
-
-function StoriesRow({
-  stories,
-  onOpenStory,
-}: {
-  stories: Story[]
-  onOpenStory: (index: number) => void
-}) {
-  return (
-    <section className="px-4">
-      <h2 className="mb-3 text-sm font-medium text-muted-foreground">Stories</h2>
-      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
-        {stories.map((story, i) => (
-          <StoryAvatar
-            key={story.id}
-            name={story.companionName}
-            avatarUrl={story.companionAvatarUrl}
-            viewed={story.viewed}
-            onClick={() => onOpenStory(i)}
-          />
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function CompanionsGrid({ companions }: { companions: Companion[] }) {
-  return (
-    <section className="px-4">
-      <h2 className="mb-3 text-sm font-medium text-muted-foreground">Your Companions</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {companions.map((companion) => (
-          <CompanionCard key={companion.id} companion={companion} />
-        ))}
-      </div>
-    </section>
-  )
-}
 
 export default function DashboardPage() {
   const [companions, setCompanions] = useState<Companion[]>([])

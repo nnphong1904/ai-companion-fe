@@ -5,29 +5,11 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { MoodBadge } from "@/components/mood-badge"
+import { ChatListSkeleton } from "@/features/chat"
+import { MoodBadge } from "@/features/mood"
 import { formatRelativeTime } from "@/lib/format"
 import * as api from "@/lib/api"
 import type { Companion } from "@/types"
-
-function ChatListSkeleton() {
-  return (
-    <div className="space-y-2 px-4">
-      {Array.from({ length: 4 }, (_, i) => (
-        <Card key={i}>
-          <CardContent className="flex items-center gap-3 p-3">
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <div className="flex-1 space-y-1.5">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-3 w-16" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  )
-}
 
 export default function ChatIndexPage() {
   const [companions, setCompanions] = useState<Companion[]>([])
