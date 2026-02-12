@@ -41,14 +41,25 @@ export function CompanionPickCard({
 
         <div
           className={cn(
-            "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+            "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors",
             isSelected
               ? "border-primary bg-primary"
               : "border-muted-foreground/30",
           )}
         >
           {isSelected && (
-            <div className="h-2 w-2 rounded-full bg-primary-foreground" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={3}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-3 w-3 text-primary-foreground"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
           )}
         </div>
       </CardContent>

@@ -4,13 +4,19 @@ import { useEffect, useRef, useState } from "react"
 import * as api from "@/lib/api"
 import type { Message } from "../types"
 
-export function useChat(companionId: string) {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+type UseChatOptions = {
+  companionId: string
+  initialMessages?: Message[]
+}
+
+export function useChat({ companionId, initialMessages }: UseChatOptions) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages ?? [])
+  const [isLoading, setIsLoading] = useState(!initialMessages)
   const [isSending, setIsSending] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (initialMessages) return
     let cancelled = false
     setIsLoading(true)
     api.getMessages(companionId).then((msgs) => {
@@ -22,7 +28,7 @@ export function useChat(companionId: string) {
     return () => {
       cancelled = true
     }
-  }, [companionId])
+  }, [companionId, initialMessages])
 
   function scrollToBottom() {
     requestAnimationFrame(() => {
@@ -33,7 +39,6 @@ export function useChat(companionId: string) {
   async function sendMessage(content: string) {
     if (!content.trim() || isSending) return
 
-    // Optimistic insert of user message
     const optimisticMsg: Message = {
       id: `opt-${Date.now()}`,
       companionId,
@@ -49,7 +54,6 @@ export function useChat(companionId: string) {
     try {
       const { userMessage, aiResponse } = await api.sendMessage(companionId, content.trim())
 
-      // Replace optimistic with real user message + add AI response
       setMessages((prev) => {
         const withoutOptimistic = prev.filter((m) => m.id !== optimisticMsg.id)
         return [

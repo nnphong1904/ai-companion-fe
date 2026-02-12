@@ -13,7 +13,10 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
   const [activeStoryIndex, setActiveStoryIndex] = useState(-1)
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
   const [progress, setProgress] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval>>(null)
+  const slideStartTimeRef = useRef<number>(0)
+  const slideDurationMsRef = useRef<number>(0)
 
   // Use a ref for the advance callback so the interval always calls the latest version
   const advanceRef = useRef<() => void>(null)
@@ -32,6 +35,9 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
   function startTimer(duration: number) {
     clearTimer()
     setProgress(0)
+    setIsPaused(false)
+    slideStartTimeRef.current = Date.now()
+    slideDurationMsRef.current = duration
     const interval = 50
     timerRef.current = setInterval(() => {
       setProgress((prev) => {
@@ -45,6 +51,41 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
     }, interval)
   }
 
+  function pauseTimer() {
+    if (!timerRef.current) return
+    const elapsed = Date.now() - slideStartTimeRef.current
+    slideDurationMsRef.current = Math.max(slideDurationMsRef.current - elapsed, 0)
+    clearTimer()
+    setIsPaused(true)
+  }
+
+  function resumeTimer() {
+    if (!isPaused) return
+    setIsPaused(false)
+    const remaining = slideDurationMsRef.current
+    if (remaining <= 0) {
+      advanceRef.current?.()
+      return
+    }
+    slideStartTimeRef.current = Date.now()
+    const interval = 50
+    timerRef.current = setInterval(() => {
+      setProgress((prev) => {
+        const next = prev + (interval / remaining) * 100
+        if (next >= 100) {
+          advanceRef.current?.()
+          return 0
+        }
+        return next
+      })
+    }, interval)
+  }
+
+  // Override slide duration (used when video reports its actual duration)
+  function setActiveSlideDuration(durationMs: number) {
+    startTimer(durationMs)
+  }
+
   // Keep advanceRef in sync — safe inside useEffect
   useEffect(() => {
     advanceRef.current = () => {
@@ -56,7 +97,12 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
         setActiveSlideIndex(nextSlide)
         setProgress(0)
         const slide = story.slides[nextSlide]
-        startTimer((slide?.duration ?? 5) * 1000)
+        // Don't start timer for video — let video's onLoadedMetadata handle it
+        if (slide?.type === "video") {
+          clearTimer()
+        } else {
+          startTimer((slide?.duration ?? 5) * 1000)
+        }
       } else if (activeStoryIndex < stories.length - 1) {
         const nextIndex = activeStoryIndex + 1
         setActiveStoryIndex(nextIndex)
@@ -67,7 +113,11 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
           onMarkViewed?.(nextStory.id)
         }
         const slide = nextStory?.slides[0]
-        startTimer((slide?.duration ?? 5) * 1000)
+        if (slide?.type === "video") {
+          clearTimer()
+        } else {
+          startTimer((slide?.duration ?? 5) * 1000)
+        }
       } else {
         clearTimer()
         setActiveStoryIndex(-1)
@@ -81,12 +131,18 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
     setActiveStoryIndex(storyIndex)
     setActiveSlideIndex(0)
     setProgress(0)
+    setIsPaused(false)
     const story = stories[storyIndex]
     if (story && !story.viewed) {
       onMarkViewed?.(story.id)
     }
-    const slideDur = (story?.slides[0]?.duration ?? 5) * 1000
-    startTimer(slideDur)
+    const slide = story?.slides[0]
+    if (slide?.type === "video") {
+      // Don't start timer — video's metadata callback will set the duration
+      clearTimer()
+    } else {
+      startTimer((slide?.duration ?? 5) * 1000)
+    }
   }
 
   function close() {
@@ -94,6 +150,7 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
     setActiveStoryIndex(-1)
     setActiveSlideIndex(0)
     setProgress(0)
+    setIsPaused(false)
   }
 
   function goNext() {
@@ -105,7 +162,11 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
       const newIndex = activeSlideIndex - 1
       setActiveSlideIndex(newIndex)
       const slide = activeStory?.slides[newIndex]
-      startTimer((slide?.duration ?? 5) * 1000)
+      if (slide?.type === "video") {
+        clearTimer()
+      } else {
+        startTimer((slide?.duration ?? 5) * 1000)
+      }
     } else if (activeStoryIndex > 0) {
       const prevIndex = activeStoryIndex - 1
       setActiveStoryIndex(prevIndex)
@@ -113,7 +174,11 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
       const lastSlideIndex = (prevStory?.slides.length ?? 1) - 1
       setActiveSlideIndex(lastSlideIndex)
       const slide = prevStory?.slides[lastSlideIndex]
-      startTimer((slide?.duration ?? 5) * 1000)
+      if (slide?.type === "video") {
+        clearTimer()
+      } else {
+        startTimer((slide?.duration ?? 5) * 1000)
+      }
     }
   }
 
@@ -129,10 +194,14 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
     activeSlide,
     activeSlideIndex,
     progress,
+    isPaused,
     open,
     close,
     goNext,
     goPrev,
     react,
+    pauseTimer,
+    resumeTimer,
+    setActiveSlideDuration,
   }
 }

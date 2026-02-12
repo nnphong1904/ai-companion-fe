@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useRef } from "react"
 import { X } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
@@ -12,17 +13,22 @@ function ProgressBars({
   total,
   current,
   progress,
+  isPaused,
 }: {
   total: number
   current: number
   progress: number
+  isPaused?: boolean
 }) {
   return (
     <div className="flex gap-1 px-3 pt-3">
       {Array.from({ length: total }, (_, i) => (
         <div key={i} className="h-0.5 flex-1 overflow-hidden rounded-full bg-white/30">
           <div
-            className="h-full rounded-full bg-white transition-all duration-100 ease-linear"
+            className={cn(
+              "h-full rounded-full bg-white transition-all duration-100 ease-linear",
+              isPaused && i === current && "transition-none",
+            )}
             style={{
               width:
                 i < current ? "100%" : i === current ? `${progress}%` : "0%",
@@ -34,11 +40,31 @@ function ProgressBars({
   )
 }
 
-function SlideContent({ slide }: { slide: StorySlide }) {
+function SlideContent({
+  slide,
+  isPaused,
+  onDurationResolved,
+}: {
+  slide: StorySlide
+  isPaused?: boolean
+  onDurationResolved?: (durationMs: number) => void
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    if (slide.type !== "video" || !videoRef.current) return
+    if (isPaused) {
+      videoRef.current.pause()
+    } else {
+      videoRef.current.play().catch(() => {})
+    }
+  }, [isPaused, slide.type])
+
   return (
     <div
       className={cn(
         "flex flex-1 items-center justify-center p-8",
+        "animate-in fade-in zoom-in-[0.98] duration-300",
         slide.type === "text" && "bg-gradient-to-br",
         slide.backgroundColor,
       )}
@@ -47,6 +73,21 @@ function SlideContent({ slide }: { slide: StorySlide }) {
         <p className="max-w-sm text-center text-xl font-medium leading-relaxed text-white">
           {slide.content}
         </p>
+      ) : slide.type === "video" ? (
+        <video
+          ref={videoRef}
+          src={slide.content}
+          autoPlay
+          muted
+          playsInline
+          className="max-h-full max-w-full rounded-lg object-contain"
+          onLoadedMetadata={(e) => {
+            const video = e.currentTarget
+            if (video.duration && isFinite(video.duration)) {
+              onDurationResolved?.(video.duration * 1000)
+            }
+          }}
+        />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -99,26 +140,123 @@ function ReactionBar({ onReact }: { onReact: (emoji: string) => void }) {
   )
 }
 
+const SWIPE_THRESHOLD = 50
+const HOLD_DELAY = 200
+
+function GestureArea({
+  onNext,
+  onPrev,
+  onPause,
+  onResume,
+  children,
+}: {
+  onNext: () => void
+  onPrev: () => void
+  onPause?: () => void
+  onResume?: () => void
+  children: React.ReactNode
+}) {
+  const pointerStartRef = useRef<{ x: number; y: number; time: number } | null>(null)
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isHoldingRef = useRef(false)
+
+  function handlePointerDown(e: React.PointerEvent) {
+    pointerStartRef.current = { x: e.clientX, y: e.clientY, time: Date.now() }
+    isHoldingRef.current = false
+
+    holdTimerRef.current = setTimeout(() => {
+      isHoldingRef.current = true
+      onPause?.()
+    }, HOLD_DELAY)
+  }
+
+  function handlePointerUp(e: React.PointerEvent) {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current)
+      holdTimerRef.current = null
+    }
+
+    if (isHoldingRef.current) {
+      isHoldingRef.current = false
+      onResume?.()
+      return
+    }
+
+    const start = pointerStartRef.current
+    if (!start) return
+
+    const dx = e.clientX - start.x
+    const dy = e.clientY - start.y
+
+    // Horizontal swipe detection
+    if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) onNext()
+      else onPrev()
+      return
+    }
+
+    // Tap: left third = prev, right two-thirds = next
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const tapX = e.clientX - rect.left
+    if (tapX < rect.width / 3) {
+      onPrev()
+    } else {
+      onNext()
+    }
+  }
+
+  function handlePointerCancel() {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current)
+      holdTimerRef.current = null
+    }
+    if (isHoldingRef.current) {
+      isHoldingRef.current = false
+      onResume?.()
+    }
+  }
+
+  return (
+    <div
+      className="relative flex flex-1 overflow-hidden touch-pan-y"
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      onPointerLeave={handlePointerCancel}
+    >
+      {children}
+    </div>
+  )
+}
+
 export function StoryViewer({
   isOpen,
   story,
   slide,
   slideIndex,
   progress,
+  isPaused,
   onClose,
   onNext,
   onPrev,
   onReact,
+  onPause,
+  onResume,
+  onDurationResolved,
 }: {
   isOpen: boolean
   story: Story | null
   slide: StorySlide | null
   slideIndex: number
   progress: number
+  isPaused?: boolean
   onClose: () => void
   onNext: () => void
   onPrev: () => void
   onReact: (emoji: string) => void
+  onPause?: () => void
+  onResume?: () => void
+  onDurationResolved?: (durationMs: number) => void
 }) {
   if (!story || !slide) return null
 
@@ -131,24 +269,24 @@ export function StoryViewer({
           total={story.slides.length}
           current={slideIndex}
           progress={progress}
+          isPaused={isPaused}
         />
 
         <StoryHeader story={story} onClose={onClose} />
 
-        {/* Tap zones */}
-        <div className="relative flex flex-1 overflow-hidden">
-          <button
-            onClick={onPrev}
-            className="absolute inset-y-0 left-0 z-10 w-1/3"
-            aria-label="Previous"
+        <GestureArea
+          onNext={onNext}
+          onPrev={onPrev}
+          onPause={onPause}
+          onResume={onResume}
+        >
+          <SlideContent
+            key={`${story.id}-${slideIndex}`}
+            slide={slide}
+            isPaused={isPaused}
+            onDurationResolved={onDurationResolved}
           />
-          <button
-            onClick={onNext}
-            className="absolute inset-y-0 right-0 z-10 w-2/3"
-            aria-label="Next"
-          />
-          <SlideContent slide={slide} />
-        </div>
+        </GestureArea>
 
         <ReactionBar onReact={onReact} />
       </DialogContent>

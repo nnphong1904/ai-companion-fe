@@ -11,7 +11,7 @@ import type { Companion } from "@/types/shared"
 export function ChooseCompanionStep() {
   const router = useRouter()
   const [companions, setCompanions] = useState<Companion[]>([])
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
   const [isSelecting, setIsSelecting] = useState(false)
@@ -23,11 +23,23 @@ export function ChooseCompanionStep() {
     })
   }, [])
 
+  function toggleCompanion(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
   async function handleConfirm() {
-    if (!selectedId || isSelecting) return
+    if (selectedIds.size === 0 || isSelecting) return
     setIsSelecting(true)
     try {
-      await api.selectCompanion(selectedId)
+      await api.selectCompanions([...selectedIds])
       startTransition(() => router.push("/"))
     } finally {
       setIsSelecting(false)
@@ -39,7 +51,7 @@ export function ChooseCompanionStep() {
       <div className="text-center">
         <h1 className="text-2xl font-bold">Choose your companion</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Pick someone you&apos;d like to connect with
+          Pick the companions you&apos;d like to connect with
         </p>
       </div>
 
@@ -60,15 +72,15 @@ export function ChooseCompanionStep() {
               <CompanionPickCard
                 key={companion.id}
                 companion={companion}
-                isSelected={selectedId === companion.id}
-                onSelect={() => setSelectedId(companion.id)}
+                isSelected={selectedIds.has(companion.id)}
+                onSelect={() => toggleCompanion(companion.id)}
               />
             ))}
       </div>
 
       <Button
         size="lg"
-        disabled={!selectedId || isSelecting || isPending}
+        disabled={selectedIds.size === 0 || isSelecting || isPending}
         onClick={handleConfirm}
         className="w-full"
       >

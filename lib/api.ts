@@ -16,14 +16,17 @@ function delay(ms = 500): Promise<void> {
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 export async function login(
-  ...[]: [email: string, password: string]
+  _email: string,
+  _password: string,
 ): Promise<User> {
   await delay(800)
   return mockUser
 }
 
 export async function signup(
-  ...[]: [email: string, password: string, name: string]
+  _email: string,
+  _password: string,
+  _name: string,
 ): Promise<User> {
   await delay(800)
   return mockUser
@@ -40,8 +43,8 @@ export async function getMe(): Promise<User> {
 
 // ─── Onboarding ──────────────────────────────────────────────────────────────
 
-export async function selectCompanion(
-  ...[]: [companionId: string]
+export async function selectCompanions(
+  _companionIds: string[],
 ): Promise<void> {
   await delay(600)
 }
@@ -65,12 +68,13 @@ export async function getStories(): Promise<Story[]> {
   return mockStories
 }
 
-export async function markStoryViewed(...[]: [storyId: string]): Promise<void> {
+export async function markStoryViewed(_storyId: string): Promise<void> {
   await delay(200)
 }
 
 export async function reactToStory(
-  ...[]: [storyId: string, emoji: string]
+  _storyId: string,
+  _emoji: string,
 ): Promise<void> {
   await delay(200)
 }
@@ -101,7 +105,8 @@ export async function sendMessage(
 }
 
 export async function toggleMemory(
-  ...[]: [messageId: string, isMemory: boolean]
+  _messageId: string,
+  _isMemory: boolean,
 ): Promise<void> {
   await delay(300)
 }
@@ -113,8 +118,6 @@ export async function getMemories(companionId: string): Promise<Memory[]> {
   return getMockMemories(companionId)
 }
 
-export async function deleteMemory(
-  ...[]: [memoryId: string]
-): Promise<void> {
+export async function deleteMemory(_memoryId: string): Promise<void> {
   await delay(300)
 }

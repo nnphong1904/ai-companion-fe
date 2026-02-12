@@ -1,28 +1,19 @@
-"use client"
-
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { use, useEffect, useState } from "react"
+import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { CompanionProfileContent, CompanionProfileSkeleton } from "@/components/companion"
+import { CompanionProfileContent } from "@/components/companion"
 import * as api from "@/lib/api"
-import type { Companion } from "@/types"
 
-export default function CompanionPage({
+export default async function CompanionPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = use(params)
-  const [companion, setCompanion] = useState<Companion | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { id } = await params
+  const companion = await api.getCompanion(id)
 
-  useEffect(() => {
-    api.getCompanion(id).then((data) => {
-      setCompanion(data)
-      setIsLoading(false)
-    })
-  }, [id])
+  if (!companion) notFound()
 
   return (
     <div className="mx-auto max-w-lg py-4">
@@ -34,21 +25,9 @@ export default function CompanionPage({
           </Link>
         </Button>
       </div>
-
-      {isLoading ? (
-        <CompanionProfileSkeleton />
-      ) : companion ? (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <CompanionProfileContent companion={companion} />
-        </div>
-      ) : (
-        <div className="px-4 pt-20 text-center">
-          <p className="text-muted-foreground">Companion not found.</p>
-          <Button asChild variant="link" className="mt-2">
-            <Link href="/">Go back to dashboard</Link>
-          </Button>
-        </div>
-      )}
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <CompanionProfileContent companion={companion} />
+      </div>
     </div>
   )
 }

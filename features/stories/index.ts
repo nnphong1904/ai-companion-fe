@@ -1,3 +1,4 @@
+export { StoriesSection } from "./components/stories-section"
 export { StoriesRow } from "./components/stories-row"
 export { StoryAvatar } from "./components/story-avatar"
 export { StoryViewer } from "./components/story-viewer"

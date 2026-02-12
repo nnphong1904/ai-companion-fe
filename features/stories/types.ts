@@ -1,6 +1,6 @@
 export type StorySlide = {
   id: string
-  type: "text" | "image"
+  type: "text" | "image" | "video"
   content: string
   backgroundColor?: string
   duration: number // seconds
