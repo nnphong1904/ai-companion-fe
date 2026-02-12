@@ -1,8 +1,9 @@
 "use client"
 
-import { createContext, use, useState, useTransition } from "react"
+import { createContext, use, useEffect, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import * as api from "@/lib/api"
+import { getToken, removeToken, setToken } from "@/lib/token"
 import type { User } from "../types"
 
 type AuthState = {
@@ -27,12 +28,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [, startTransition] = useTransition()
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Restore session from token cookie on mount
+  useEffect(() => {
+    const token = getToken()
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
+    api
+      .getMe(token)
+      .then(setUser)
+      .catch(() => removeToken())
+      .finally(() => setIsLoading(false))
+  }, [])
 
   async function login(email: string, password: string) {
     setIsLoading(true)
     try {
-      const loggedIn = await api.login(email, password)
+      const { token, user: loggedIn } = await api.login(email, password)
+      setToken(token)
       setUser(loggedIn)
       startTransition(() => router.push("/"))
     } finally {
@@ -43,7 +59,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signup(email: string, password: string, name: string) {
     setIsLoading(true)
     try {
-      const created = await api.signup(email, password, name)
+      const { token, user: created } = await api.signup(email, password, name)
+      setToken(token)
       setUser(created)
       startTransition(() => router.push("/onboarding"))
     } finally {
@@ -53,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function logout() {
     await api.logout()
+    removeToken()
     setUser(null)
     startTransition(() => router.push("/login"))
   }

@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { cookies } from "next/headers"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { MemoriesEmptyState, MemoriesTimeline } from "@/features/memories"
@@ -11,9 +12,10 @@ export default async function MemoriesPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const token = (await cookies()).get("auth-token")?.value
   const [memories, companion] = await Promise.all([
-    api.getMemories(id),
-    api.getCompanion(id),
+    api.getMemories(id, token),
+    api.getCompanion(id, token),
   ])
 
   if (!companion) notFound()

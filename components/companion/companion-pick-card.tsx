@@ -47,7 +47,7 @@ export function CompanionPickCard({
               : "border-muted-foreground/30",
           )}
         >
-          {isSelected && (
+          {isSelected ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -60,7 +60,7 @@ export function CompanionPickCard({
             >
               <polyline points="20 6 9 17 4 12" />
             </svg>
-          )}
+          ) : null}
         </div>
       </CardContent>
     </Card>

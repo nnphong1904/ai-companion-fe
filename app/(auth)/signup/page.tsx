@@ -47,11 +47,11 @@ export default function SignupPage() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
           <CardContent className="space-y-4">
-            {form.formState.errors.root && (
+            {form.formState.errors.root ? (
               <p className="text-center text-sm text-destructive">
                 {form.formState.errors.root.message}
               </p>
-            )}
+            ) : null}
             <FormField
               control={form.control}
               name="name"

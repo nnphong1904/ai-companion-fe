@@ -1,4 +1,4 @@
-// Re-export hub — backward compatibility for lib/api.ts, lib/mock-data.ts, etc.
+// Re-export hub — convenience imports for pages and shared modules
 export type { User } from "@/features/auth/types"
 export type { Mood } from "@/features/mood/types"
 export { MOODS } from "@/features/mood/types"

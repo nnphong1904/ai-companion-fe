@@ -1,7 +1,8 @@
 export type Memory = {
   id: string
   companionId: string
-  messageSnippet: string
-  tag: string
+  content: string
+  tag?: string
+  pinned: boolean
   createdAt: string
 }

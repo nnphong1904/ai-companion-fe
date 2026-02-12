@@ -8,12 +8,10 @@ type MoodConfig = {
 }
 
 export const MOOD_MAP: Record<Mood, MoodConfig> = {
+  distant: { emoji: "😶", label: "Distant", color: "bg-zinc-500/20", textColor: "text-zinc-400" },
+  neutral: { emoji: "😐", label: "Neutral", color: "bg-blue-500/20", textColor: "text-blue-400" },
   happy: { emoji: "😊", label: "Happy", color: "bg-emerald-500/20", textColor: "text-emerald-400" },
-  sad: { emoji: "😢", label: "Sad", color: "bg-blue-500/20", textColor: "text-blue-400" },
-  excited: { emoji: "🤩", label: "Excited", color: "bg-amber-500/20", textColor: "text-amber-400" },
-  calm: { emoji: "😌", label: "Calm", color: "bg-cyan-500/20", textColor: "text-cyan-400" },
-  anxious: { emoji: "😰", label: "Anxious", color: "bg-purple-500/20", textColor: "text-purple-400" },
-  neutral: { emoji: "😐", label: "Neutral", color: "bg-zinc-500/20", textColor: "text-zinc-400" },
+  attached: { emoji: "💕", label: "Attached", color: "bg-pink-500/20", textColor: "text-pink-400" },
 }
 
 export function getRelationshipLabel(level: number): string {

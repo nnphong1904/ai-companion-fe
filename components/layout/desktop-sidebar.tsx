@@ -42,11 +42,11 @@ export function DesktopSidebar() {
         >
           <LogOut className="h-4 w-4" />
           Logout
-          {state.user && (
+          {state.user ? (
             <span className="ml-auto truncate text-xs text-muted-foreground/70">
               {state.user.name}
             </span>
-          )}
+          ) : null}
         </button>
       </div>
     </aside>

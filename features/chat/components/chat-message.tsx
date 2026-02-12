@@ -25,7 +25,7 @@ export function ChatMessage({
       >
         <p className="text-sm leading-relaxed">{message.content}</p>
 
-        {!isUser && onToggleMemory && (
+        {!isUser && onToggleMemory ? (
           <button
             onClick={() => onToggleMemory(message.id)}
             className={cn(
@@ -38,7 +38,7 @@ export function ChatMessage({
             <Star className={cn("h-3.5 w-3.5", message.isMemory && "fill-current")} />
             {message.isMemory ? "Saved" : "Save Memory"}
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   )

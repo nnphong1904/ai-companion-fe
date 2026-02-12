@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CompanionPickCard } from "@/components/companion"
 import * as api from "@/lib/api"
+import { getToken } from "@/lib/token"
 import type { Companion } from "@/types/shared"
 
 export function ChooseCompanionStep() {
@@ -17,7 +18,8 @@ export function ChooseCompanionStep() {
   const [isSelecting, setIsSelecting] = useState(false)
 
   useEffect(() => {
-    api.getCompanions().then((data) => {
+    const token = getToken() ?? undefined
+    api.getAllCompanions(token).then((data) => {
       setCompanions(data)
       setIsLoading(false)
     })
@@ -39,7 +41,8 @@ export function ChooseCompanionStep() {
     if (selectedIds.size === 0 || isSelecting) return
     setIsSelecting(true)
     try {
-      await api.selectCompanions([...selectedIds])
+      const token = getToken() ?? undefined
+      await api.selectCompanions([...selectedIds], token)
       startTransition(() => router.push("/"))
     } finally {
       setIsSelecting(false)

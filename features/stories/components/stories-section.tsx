@@ -5,6 +5,7 @@ import { StoriesRow } from "./stories-row"
 import { StoryViewer } from "./story-viewer"
 import { useStoriesViewer } from "../hooks/use-stories"
 import * as api from "@/lib/api"
+import { getToken } from "@/lib/token"
 import type { Story } from "../types"
 
 export function StoriesSection({ initialStories }: { initialStories: Story[] }) {
@@ -16,10 +17,10 @@ export function StoriesSection({ initialStories }: { initialStories: Story[] }) 
       setStories((prev) =>
         prev.map((s) => (s.id === storyId ? { ...s, viewed: true } : s)),
       )
-      api.markStoryViewed(storyId)
     },
-    onReact: (storyId, emoji) => {
-      api.reactToStory(storyId, emoji)
+    onReact: (storyId, slideId, emoji) => {
+      const token = getToken() ?? undefined
+      api.reactToStory(storyId, slideId, emoji, token)
     },
   })
 

@@ -18,7 +18,7 @@ export function ChatRoom({
   companion: Companion
   initialMessages: Message[]
 }) {
-  const { messages, isLoading, isSending, scrollRef, sendMessage, toggleMemory, scrollToBottom } =
+  const { messages, isLoading, isSending, scrollRef, sendMessage, saveMemory, scrollToBottom } =
     useChat({ companionId: companion.id, initialMessages })
 
   useEffect(() => {
@@ -38,10 +38,10 @@ export function ChatRoom({
               <ChatMessage
                 key={message.id}
                 message={message}
-                onToggleMemory={toggleMemory}
+                onToggleMemory={saveMemory}
               />
             ))}
-            {isSending && <TypingIndicator />}
+            {isSending ? <TypingIndicator /> : null}
           </div>
         )}
       </ScrollArea>

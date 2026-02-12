@@ -58,7 +58,80 @@ All pages are client components that fetch via `lib/api.ts`. To swap in a real b
 ## shadcn/ui Configuration
 
 Configured in `components.json`:
+
 - Components go in `components/ui/`
 - Hooks go in `hooks/`
 - Style: new-york, base color: slate, icon library: lucide
 - RSC and TSX enabled
+
+  ***
+
+  # Backend API Reference
+
+  ## Server
+  - Base URL: http://localhost:8080/api
+  - CORS allowed origin: http://localhost:3000
+
+  ## Authentication
+  - POST /api/auth/signup — body: { email, password, name } → { data: { token, user } }
+  - POST /api/auth/login — body: { email, password } → { data: { token, user } }
+  - GET /api/auth/me → { data: user }
+  - All protected routes require header: Authorization: Bearer <JWT_TOKEN>
+  - Token expires in 24 hours
+
+  ## Companions
+  - GET /api/companions → { data: Companion[] }
+  - GET /api/companions/:id → { data: Companion }
+
+  Companion: { id, name, description, avatar_url, personality, created_at }
+
+  Pre-seeded companions: Luna, Kai, Nova, Ember, Zephyr
+
+  ## Onboarding
+  - POST /api/onboarding/select-companion — body: { companion_id } → { data: RelationshipState }
+
+  ## Messages (Chat)
+  - POST /api/companions/:id/messages — body: { content } → { data: [userMessage, companionMessage] }
+    Returns both the user message and AI-generated companion reply as an array of 2 messages.
+  - GET /api/companions/:id/messages?cursor=<timestamp>&limit=20 → { data: { messages, next_cursor, has_more
+    } }
+    Cursor-based pagination, newest first. cursor is RFC3339Nano timestamp.
+
+  Message: { id, user_id, companion_id, content, role ("user"|"companion"), created_at }
+
+  ## Stories
+  - GET /api/stories → { data: Story[] } (active stories with media)
+  - GET /api/companions/:id/stories → { data: Story[] }
+  - POST /api/stories/:id/react — body: { media_id, reaction } → { data: { status: "ok" } }
+    Valid reactions: "love", "sad", "heart_eyes", "angry"
+
+  Story: { id, companion_id, created_at, expires_at, media: StoryMedia[] }
+  StoryMedia: { id, story_id, media_url, media_type ("image"|"video"), duration, sort_order, created_at }
+
+  ## Relationships
+  - GET /api/relationships → { data: RelationshipState[] }
+  - GET /api/companions/:id/relationship → { data: RelationshipState }
+
+  RelationshipState: { id, user_id, companion_id, mood_score (0-100), relationship_score (0-100), mood_label,
+  last_interaction, updated_at }
+
+  Mood labels: <20 "Distant", 20-50 "Neutral", 50-80 "Happy", 80+ "Attached"
+  Time decay: -0.5 mood points per hour of inactivity (calculated at read time)
+
+  ## Memories
+  - GET /api/companions/:id/memories → { data: Memory[] } (ordered: pinned first, then newest)
+  - POST /api/companions/:id/memories — body: { content, tag? } → { data: Memory }
+  - DELETE /api/memories/:id → { data: { status: "deleted" } }
+  - PATCH /api/memories/:id/pin → { data: Memory } (toggles pinned)
+
+  Memory: { id, user_id, companion_id, content, tag?, pinned, created_at }
+
+  ## Response Format
+  - Success: { data: ... }
+  - Error: { error: "message" }
+  - All responses are application/json
+
+  ## Side Effects
+  - Sending a message: mood_score +2, relationship_score +1
+  - Reacting to a story: mood_score +3, relationship_score +2
+  - Story reactions have UNIQUE constraint on (user_id, media_id)

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { CompanionProfileContent, CompanionProfileSkeleton } from "@/components/companion"
 import * as api from "@/lib/api"
+import { getToken } from "@/lib/token"
 import type { Companion } from "@/types"
 
 export default function CompanionModal({
@@ -18,7 +19,8 @@ export default function CompanionModal({
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    api.getCompanion(id).then((data) => {
+    const token = getToken() ?? undefined
+    api.getCompanion(id, token).then((data) => {
       setCompanion(data)
       setIsLoading(false)
     })

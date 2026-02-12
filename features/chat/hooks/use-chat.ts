@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import * as api from "@/lib/api"
+import { getToken } from "@/lib/token"
 import type { Message } from "../types"
 
 type UseChatOptions = {
@@ -19,7 +20,8 @@ export function useChat({ companionId, initialMessages }: UseChatOptions) {
     if (initialMessages) return
     let cancelled = false
     setIsLoading(true)
-    api.getMessages(companionId).then((msgs) => {
+    const token = getToken() ?? undefined
+    api.getMessages(companionId, token).then((msgs) => {
       if (!cancelled) {
         setMessages(msgs)
         setIsLoading(false)
@@ -52,22 +54,16 @@ export function useChat({ companionId, initialMessages }: UseChatOptions) {
     scrollToBottom()
 
     try {
-      const { userMessage, aiResponse } = await api.sendMessage(companionId, content.trim())
+      const token = getToken() ?? undefined
+      const { userMessage, companionMessage } = await api.sendMessage(
+        companionId,
+        content.trim(),
+        token,
+      )
 
       setMessages((prev) => {
         const withoutOptimistic = prev.filter((m) => m.id !== optimisticMsg.id)
-        return [
-          ...withoutOptimistic,
-          userMessage,
-          {
-            id: `ai-${Date.now()}`,
-            companionId,
-            role: "assistant" as const,
-            content: aiResponse,
-            createdAt: new Date().toISOString(),
-            isMemory: false,
-          },
-        ]
+        return [...withoutOptimistic, userMessage, companionMessage]
       })
       scrollToBottom()
     } finally {
@@ -75,13 +71,28 @@ export function useChat({ companionId, initialMessages }: UseChatOptions) {
     }
   }
 
-  async function toggleMemory(messageId: string) {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === messageId ? { ...m, isMemory: !m.isMemory } : m)),
-    )
+  async function saveMemory(messageId: string) {
     const msg = messages.find((m) => m.id === messageId)
-    if (msg) {
-      await api.toggleMemory(messageId, !msg.isMemory)
+    if (!msg) return
+
+    if (msg.isMemory) {
+      // Already saved — no unsave for now (would need memory ID tracking)
+      return
+    }
+
+    // Optimistically mark as saved
+    setMessages((prev) =>
+      prev.map((m) => (m.id === messageId ? { ...m, isMemory: true } : m)),
+    )
+
+    try {
+      const token = getToken() ?? undefined
+      await api.saveMemory(companionId, msg.content, undefined, token)
+    } catch {
+      // Revert on failure
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, isMemory: false } : m)),
+      )
     }
   }
 
@@ -91,7 +102,7 @@ export function useChat({ companionId, initialMessages }: UseChatOptions) {
     isSending,
     scrollRef,
     sendMessage,
-    toggleMemory,
+    saveMemory,
     scrollToBottom,
   }
 }

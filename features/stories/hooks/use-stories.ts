@@ -6,7 +6,7 @@ import type { Story } from "../types"
 type UseStoriesViewerArgs = {
   stories: Story[]
   onMarkViewed?: (storyId: string) => void
-  onReact?: (storyId: string, emoji: string) => void
+  onReact?: (storyId: string, slideId: string, emoji: string) => void
 }
 
 export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesViewerArgs) {
@@ -183,8 +183,8 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
   }
 
   function react(emoji: string) {
-    if (activeStory) {
-      onReact?.(activeStory.id, emoji)
+    if (activeStory && activeSlide) {
+      onReact?.(activeStory.id, activeSlide.id, emoji)
     }
   }
 

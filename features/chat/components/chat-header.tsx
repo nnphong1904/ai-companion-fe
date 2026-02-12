@@ -15,11 +15,11 @@ export function ChatHeader({ companion }: { companion: Companion | null }) {
         <h1 className="truncate text-sm font-semibold">
           {companion?.name ?? "Chat"}
         </h1>
-        {companion && (
+        {companion ? (
           <p className="truncate text-xs text-muted-foreground">
             Feeling {companion.mood}
           </p>
-        )}
+        ) : null}
       </div>
     </header>
   )
