@@ -1,21 +1,17 @@
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { MemoriesEmptyState, MemoriesTimeline } from "@/features/memories"
 import { getCompanion } from "@/features/companions/queries"
 import { getMemories } from "@/features/memories/queries"
-import { getAuthToken } from "@/lib/api-fetch"
 
 export default async function MemoriesPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  const token = await getAuthToken()
-  if (!token) redirect("/login")
-
   const { id } = await params
   const [memories, companion] = await Promise.all([
     getMemories(id),

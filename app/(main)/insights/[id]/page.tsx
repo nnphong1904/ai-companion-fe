@@ -1,10 +1,9 @@
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { CompanionInsights } from "@/features/insights"
 import { getCompanion } from "@/features/companions/queries"
-import { getAuthToken } from "@/lib/api-fetch"
 import { getInsights } from "@/features/insights/queries"
 
 export default async function InsightsPage({
@@ -12,9 +11,6 @@ export default async function InsightsPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const token = await getAuthToken()
-  if (!token) redirect("/login")
-
   const { id } = await params
   const companion = await getCompanion(id)
 

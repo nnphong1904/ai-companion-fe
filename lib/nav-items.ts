@@ -1,8 +1,7 @@
-import { Home, MessageCircle } from "lucide-react"
+import { Home } from "lucide-react"
 
 export const NAV_ITEMS = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/chat", label: "Chat", icon: MessageCircle },
 ] as const
 
 export function isNavActive(href: string, pathname: string): boolean {

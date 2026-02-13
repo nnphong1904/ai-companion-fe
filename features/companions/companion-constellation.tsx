@@ -102,14 +102,14 @@ export function CompanionConstellation({
   const bgStars = generateBgStars(60, dims.w, dims.h)
 
   return (
-    <section className="px-4">
+    <section>
       <h2 className="mb-3 text-sm font-medium text-muted-foreground">
         Constellation
       </h2>
 
       <div
         ref={containerRef}
-        className="relative h-[280px] overflow-hidden rounded-2xl border border-border/50 bg-[#0a0a12] sm:h-[340px]"
+        className="relative h-[200px] overflow-hidden rounded-2xl border border-border/50 bg-[#0a0a12] sm:h-[240px]"
       >
         <svg
           viewBox={`0 0 ${dims.w} ${dims.h}`}

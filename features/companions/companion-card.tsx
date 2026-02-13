@@ -1,4 +1,8 @@
+"use client"
+
+import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { BookOpen, MessageCircle, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { MOOD_MAP, getRelationshipLabel } from "@/features/mood"
 import { formatRelativeTime } from "@/lib/format"
@@ -45,12 +49,13 @@ const CARD_MOOD: Record<
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function CompanionCard({ companion }: { companion: Companion }) {
+  const router = useRouter()
   const mood = CARD_MOOD[companion.mood]
   const moodConfig = MOOD_MAP[companion.mood]
   const relationshipLabel = getRelationshipLabel(companion.relationshipLevel)
 
   return (
-    <Link href={`/companions/${companion.id}`} scroll={false}>
+    <Link href={`/companions/${companion.id}`} scroll={false} className="block">
       <div className="group relative rounded-2xl">
         {/* Glow layer — visible on hover */}
         <div
@@ -61,7 +66,7 @@ export function CompanionCard({ companion }: { companion: Companion }) {
         {/* Card body */}
         <div
           className={cn(
-            "relative aspect-[4/5] overflow-hidden rounded-2xl border transition-all duration-300",
+            "relative h-[392px] overflow-hidden rounded-2xl border transition-all duration-300",
             "group-hover:-translate-y-0.5",
             mood.borderClass,
           )}
@@ -74,8 +79,9 @@ export function CompanionCard({ companion }: { companion: Companion }) {
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
 
-          {/* Dark gradient overlay — heavier at bottom for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
+          {/* Dark gradient overlay — expands on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10 transition-opacity duration-300 group-hover:opacity-0" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
           {/* Activity dot — top right */}
           <span
@@ -98,20 +104,20 @@ export function CompanionCard({ companion }: { companion: Companion }) {
             <span>{moodConfig.label}</span>
           </div>
 
-          {/* Bottom content — overlaid on gradient */}
-          <div className="absolute inset-x-0 bottom-0 space-y-2 px-3.5 pb-3.5">
-            {/* Name + time */}
+          {/* ─── Bottom content ─── */}
+          <div className="absolute inset-x-0 bottom-0 px-4 pb-4">
+            {/* Always visible: name + time */}
             <div className="space-y-0.5">
-              <h3 className="font-semibold leading-tight tracking-tight text-white">
+              <h3 className="text-base font-semibold leading-tight tracking-tight text-white">
                 {companion.name}
               </h3>
-              <p className="text-[11px] text-white/60">
+              <p className="text-xs text-white/60">
                 {formatRelativeTime(companion.lastInteraction)}
               </p>
             </div>
 
-            {/* Relationship level — segmented bar */}
-            <div className="space-y-1">
+            {/* Relationship level — segmented bar (always visible) */}
+            <div className="mt-2.5 space-y-1">
               <div className="flex gap-1">
                 {Array.from({ length: 5 }, (_, i) => {
                   const threshold = i * 20
@@ -137,6 +143,77 @@ export function CompanionCard({ companion }: { companion: Companion }) {
               <span className={cn("text-[10px] font-medium", mood.accentText)}>
                 {relationshipLabel}
               </span>
+            </div>
+
+            {/* ─── Hover-reveal section ─── */}
+            <div className="grid max-h-0 overflow-hidden opacity-0 transition-all duration-300 group-hover:max-h-[200px] group-hover:opacity-100">
+              {/* Description */}
+              <p className="mt-3 line-clamp-2 text-[13px] leading-relaxed text-white/70">
+                {companion.description}
+              </p>
+
+              {/* Quick stats row */}
+              <div className="mt-3 flex items-center gap-3">
+                <div className="flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] text-white/70 backdrop-blur-sm">
+                  <span>{moodConfig.emoji}</span>
+                  <span>Mood {companion.relationshipLevel}%</span>
+                </div>
+                <div className="text-[11px] text-white/40">
+                  {relationshipLabel} · {companion.relationshipLevel}%
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="mt-3 flex flex-wrap gap-2">
+                <div
+                  onClick={(e) => {
+                    e.preventDefault()
+                    window.location.href = `/chat/${companion.id}`
+                  }}
+                >
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-all",
+                      "border-white/15 bg-white/10 text-white hover:border-white/30 hover:bg-white/20",
+                    )}
+                  >
+                    <MessageCircle className="h-3 w-3" />
+                    Chat
+                  </span>
+                </div>
+                <div
+                  onClick={(e) => {
+                    e.preventDefault()
+                    router.push(`/companions/${companion.id}?view=memories`, { scroll: false })
+                  }}
+                >
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-all",
+                      "border-white/15 bg-white/10 text-white hover:border-white/30 hover:bg-white/20",
+                    )}
+                  >
+                    <BookOpen className="h-3 w-3" />
+                    Memories
+                  </span>
+                </div>
+                <div
+                  onClick={(e) => {
+                    e.preventDefault()
+                    router.push(`/companions/${companion.id}?view=insights`, { scroll: false })
+                  }}
+                >
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-all",
+                      "border-white/15 bg-white/10 text-white hover:border-white/30 hover:bg-white/20",
+                    )}
+                  >
+                    <TrendingUp className="h-3 w-3" />
+                    Insights
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

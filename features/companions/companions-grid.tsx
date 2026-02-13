@@ -52,66 +52,81 @@ export function CompanionsGrid({
 
   return (
     <section className="px-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-medium text-muted-foreground">Your Companions</h2>
+      {/* Section header + Add button */}
+      {companions.length > 0 && (
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Your Companions
+          </h2>
 
-        {available.length > 0 && !isAuthenticated ? (
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Log in to Add
-          </Link>
-        ) : null}
+          {available.length > 0 && !isAuthenticated ? (
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Log in to Add
+            </Link>
+          ) : null}
 
-        {available.length > 0 && isAuthenticated ? (
-          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) setSelectedIds(new Set()) }}>
-            <DialogTrigger asChild>
-              <button className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary">
-                <Plus className="h-3.5 w-3.5" />
-                Add
-              </button>
-            </DialogTrigger>
-            <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Add Companion</DialogTitle>
-                <DialogDescription>
-                  Choose new companions to connect with
-                </DialogDescription>
-              </DialogHeader>
+          {available.length > 0 && isAuthenticated ? (
+            <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) setSelectedIds(new Set()) }}>
+              <DialogTrigger asChild>
+                <button className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary">
+                  <Plus className="h-3.5 w-3.5" />
+                  Add
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Add Companion</DialogTitle>
+                  <DialogDescription>
+                    Choose new companions to connect with
+                  </DialogDescription>
+                </DialogHeader>
 
-              <div className="space-y-3 py-2">
-                {available.map((companion) => (
-                  <CompanionPickCard
-                    key={companion.id}
-                    companion={companion}
-                    isSelected={selectedIds.has(companion.id)}
-                    onSelect={() => toggleCompanion(companion.id)}
-                  />
-                ))}
-              </div>
+                <div className="space-y-3 py-2">
+                  {available.map((companion) => (
+                    <CompanionPickCard
+                      key={companion.id}
+                      companion={companion}
+                      isSelected={selectedIds.has(companion.id)}
+                      onSelect={() => toggleCompanion(companion.id)}
+                    />
+                  ))}
+                </div>
 
-              <Button
-                size="lg"
-                className="w-full"
-                disabled={selectedIds.size === 0 || isPending}
-                onClick={handleAdd}
-              >
-                {isPending
-                  ? "Adding..."
-                  : `Add ${selectedIds.size || ""} Companion${selectedIds.size !== 1 ? "s" : ""}`}
-              </Button>
-            </DialogContent>
-          </Dialog>
-        ) : null}
-      </div>
+                <Button
+                  size="lg"
+                  className="w-full"
+                  disabled={selectedIds.size === 0 || isPending}
+                  onClick={handleAdd}
+                >
+                  {isPending
+                    ? "Adding..."
+                    : `Add ${selectedIds.size || ""} Companion${selectedIds.size !== 1 ? "s" : ""}`}
+                </Button>
+              </DialogContent>
+            </Dialog>
+          ) : null}
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {companions.map((companion) => (
-          <CompanionCard key={companion.id} companion={companion} />
-        ))}
-      </div>
+      {/* Companion grid */}
+      {companions.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {companions.map((companion, i) => (
+            <div
+              key={companion.id}
+              style={{
+                animation: `card-fade-up 0.4s ease-out ${i * 0.08}s both`,
+              }}
+            >
+              <CompanionCard companion={companion} />
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   )
 }

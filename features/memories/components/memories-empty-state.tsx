@@ -1,5 +1,6 @@
+"use client"
+
 import { Brain, MessageCircle } from "lucide-react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export function MemoriesEmptyState({ companionId }: { companionId: string }) {
@@ -14,11 +15,12 @@ export function MemoriesEmptyState({ companionId }: { companionId: string }) {
           Memories are created from your conversations. Start chatting to build your shared history.
         </p>
       </div>
-      <Button asChild className="mt-2">
-        <Link href={`/chat/${companionId}`}>
-          <MessageCircle className="mr-2 h-4 w-4" />
-          Start chatting
-        </Link>
+      <Button
+        className="mt-2"
+        onClick={() => { window.location.href = `/chat/${companionId}` }}
+      >
+        <MessageCircle className="mr-2 h-4 w-4" />
+        Start chatting
       </Button>
     </div>
   )

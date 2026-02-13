@@ -66,17 +66,6 @@ export function MoodAura({
         </p>
       </div>
 
-      {/* Injected keyframes */}
-      <style jsx global>{`
-        @keyframes aura-spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes aura-pulse {
-          0%, 100% { opacity: 0.6; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.08); }
-        }
-      `}</style>
     </div>
   )
 }

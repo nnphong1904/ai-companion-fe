@@ -6,10 +6,13 @@ import { CompanionModalClient } from "./modal-client"
 
 export default async function CompanionModalPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ view?: string }>
 }) {
   const { id } = await params
+  const { view } = await searchParams
   const token = await getAuthToken()
 
   const [companion, memories, insights] = await Promise.all([
@@ -18,12 +21,15 @@ export default async function CompanionModalPage({
     token ? getInsights(id).catch(() => null) : Promise.resolve(null),
   ])
 
+  const initialView = view === "memories" || view === "insights" ? view : undefined
+
   return (
     <CompanionModalClient
       companion={companion}
       memories={memories}
       insights={insights}
       isAuthenticated={!!token}
+      initialView={initialView}
     />
   )
 }

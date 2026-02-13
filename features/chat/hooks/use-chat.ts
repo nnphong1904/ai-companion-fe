@@ -112,7 +112,7 @@ export function useChat({
     )
 
     try {
-      await saveMemoryAction(companionId, msg.content)
+      await saveMemoryAction(companionId, msg.content, msg.id)
       toast.success("Memory saved")
     } catch {
       setMessages((prev) =>

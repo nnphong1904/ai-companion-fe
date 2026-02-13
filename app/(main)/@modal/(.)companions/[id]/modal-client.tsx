@@ -28,15 +28,17 @@ export function CompanionModalClient({
   memories,
   insights,
   isAuthenticated = true,
+  initialView,
 }: {
   companion: Companion | null
   memories: Memory[]
   insights: InsightsData | null
   isAuthenticated?: boolean
+  initialView?: "memories" | "insights"
 }) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(true)
-  const [view, setView] = useState<ModalView>("profile")
+  const [view, setView] = useState<ModalView>(initialView ?? "profile")
 
   function handleClose() {
     setIsOpen(false)

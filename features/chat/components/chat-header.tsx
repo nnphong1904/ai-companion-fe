@@ -7,7 +7,7 @@ export function ChatHeader({ companion }: { companion: Companion | null }) {
   return (
     <header className="flex items-center gap-3 border-b px-3 py-2">
       <Button asChild variant="ghost" size="icon" className="shrink-0">
-        <Link href="/chat">
+        <Link href="/">
           <ArrowLeft className="h-4 w-4" />
         </Link>
       </Button>

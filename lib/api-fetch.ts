@@ -4,7 +4,6 @@ import type { Companion } from "@/types/shared"
 import type { Memory } from "@/features/memories/types"
 import type { Message } from "@/features/chat/types"
 import type { Mood } from "@/features/mood/types"
-import type { Story, StorySlide } from "@/features/stories/types"
 import type { User } from "@/features/auth/types"
 
 // ─── Config ─────────────────────────────────────────────────────────────────
@@ -131,6 +130,7 @@ export type BackendMessage = {
   companion_id: string
   content: string
   role: "user" | "companion"
+  is_memorized?: boolean
   created_at: string
 }
 
@@ -177,7 +177,7 @@ export function transformMessage(m: BackendMessage): Message {
     role: m.role === "companion" ? "assistant" : "user",
     content: m.content,
     createdAt: m.created_at,
-    isMemory: false,
+    isMemory: m.is_memorized ?? false,
   }
 }
 
@@ -192,28 +192,6 @@ export function transformMemory(m: BackendMemory): Memory {
   }
 }
 
-export function transformStory(
-  s: BackendStory,
-  companion: BackendCompanion | undefined,
-): Story {
-  const slides: StorySlide[] = [...s.media]
-    .sort((a, b) => a.sort_order - b.sort_order)
-    .map((m) => ({
-      id: m.id,
-      type: m.media_type,
-      content: m.media_url,
-      duration: m.duration,
-    }))
-
-  return {
-    id: s.id,
-    companionId: s.companion_id,
-    companionName: companion?.name ?? "Companion",
-    companionAvatarUrl: companion?.avatar_url ?? "",
-    slides,
-    viewed: false,
-  }
-}
 
 // ─── Reaction mapping ───────────────────────────────────────────────────────
 
