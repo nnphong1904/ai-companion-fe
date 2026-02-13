@@ -3,6 +3,7 @@
 A full-stack AI companion app with Instagram-style Stories, real-time chat with memory, dynamic mood/relationship tracking, relationship insights, and an interactive constellation visualization — built with Next.js 16 (App Router) and Go.
 
 **Live Demo:** https://ai-companion-fe-eta.vercel.app
+**Demo Account:** `test3@gmail.com` / `12345678`
 
 ---
 
