@@ -1,13 +1,17 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { ChatRoom } from "@/features/chat"
 import { getCompanion } from "@/features/companions/queries"
 import { getMessages } from "@/features/chat/queries"
+import { getAuthToken } from "@/lib/api-fetch"
 
 export default async function ChatPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
+  const token = await getAuthToken()
+  if (!token) redirect("/login")
+
   const { id } = await params
   const [companion, data] = await Promise.all([
     getCompanion(id),

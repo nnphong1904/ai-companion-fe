@@ -1,6 +1,6 @@
 "use client"
 
-import { LogOut } from "lucide-react"
+import { LogIn, LogOut, UserPlus } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -36,18 +36,37 @@ export function DesktopSidebar() {
       </nav>
 
       <div className="border-t p-3">
-        <button
-          onClick={() => actions.logout()}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
-        >
-          <LogOut className="h-4 w-4" />
-          Logout
-          {state.user ? (
-            <span className="ml-auto truncate text-xs text-muted-foreground/70">
-              {state.user.name}
-            </span>
-          ) : null}
-        </button>
+        {!state.isLoading ? (
+          state.user ? (
+            <button
+              onClick={() => actions.logout()}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+              <span className="ml-auto truncate text-xs text-muted-foreground/70">
+                {state.user.name}
+              </span>
+            </button>
+          ) : (
+            <div className="flex flex-col gap-1">
+              <Link
+                href="/login"
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+              >
+                <LogIn className="h-4 w-4" />
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+              >
+                <UserPlus className="h-4 w-4" />
+                Sign Up
+              </Link>
+            </div>
+          )
+        ) : null}
       </div>
     </aside>
   )

@@ -3,8 +3,9 @@ import { CompanionsGrid } from "@/features/companions"
 import { CompanionCardSkeleton } from "@/features/companions"
 import { StoriesSection } from "@/features/stories"
 import { StoryRowSkeleton } from "@/features/stories"
-import { getDashboardCompanions } from "@/features/companions/queries"
+import { getDashboardCompanions, getPublicCompanions } from "@/features/companions/queries"
 import { getStories } from "@/features/stories/queries"
+import { getAuthToken } from "@/lib/api-fetch"
 
 async function StoriesBlock() {
   const stories = await getStories().catch(() => [])
@@ -13,10 +14,29 @@ async function StoriesBlock() {
 }
 
 async function CompanionsBlock() {
+  const token = await getAuthToken()
+
+  if (!token) {
+    const allCompanions = await getPublicCompanions()
+    return (
+      <CompanionsGrid
+        companions={allCompanions}
+        availableCompanions={[]}
+        isAuthenticated={false}
+      />
+    )
+  }
+
   const { myCompanions, allCompanions } = await getDashboardCompanions()
   const myIds = new Set(myCompanions.map((c) => c.id))
   const availableCompanions = allCompanions.filter((c) => !myIds.has(c.id))
-  return <CompanionsGrid companions={myCompanions} availableCompanions={availableCompanions} />
+  return (
+    <CompanionsGrid
+      companions={myCompanions}
+      availableCompanions={availableCompanions}
+      isAuthenticated
+    />
+  )
 }
 
 function CompanionsGridSkeleton() {

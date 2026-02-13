@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Link from "next/link"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -20,9 +21,11 @@ import type { Companion } from "@/types/shared"
 export function CompanionsGrid({
   companions,
   availableCompanions,
+  isAuthenticated = true,
 }: {
   companions: Companion[]
   availableCompanions?: Companion[]
+  isAuthenticated?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -55,7 +58,22 @@ export function CompanionsGrid({
         {companions.map((companion) => (
           <CompanionCard key={companion.id} companion={companion} />
         ))}
-        {available.length > 0 ? (
+        {available.length > 0 && !isAuthenticated ? (
+          <Link href="/login">
+            <Card className="group h-full cursor-pointer border-dashed transition-colors hover:bg-accent/50">
+              <CardContent className="flex flex-col items-center justify-center gap-3 p-5 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary/10">
+                  <Plus className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-semibold leading-none">Log in to Add</h3>
+                  <p className="text-xs text-muted-foreground">Sign in to connect with companions</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ) : null}
+        {available.length > 0 && isAuthenticated ? (
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) setSelectedIds(new Set()) }}>
             <DialogTrigger asChild>
               <button className="text-left">

@@ -3,7 +3,8 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { CompanionProfileContent } from "@/features/companions"
-import { getCompanion } from "@/features/companions/queries"
+import { getCompanion, getPublicCompanion } from "@/features/companions/queries"
+import { getAuthToken } from "@/lib/api-fetch"
 
 export default async function CompanionPage({
   params,
@@ -11,7 +12,8 @@ export default async function CompanionPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const companion = await getCompanion(id)
+  const token = await getAuthToken()
+  const companion = await (token ? getCompanion(id) : getPublicCompanion(id))
 
   if (!companion) notFound()
 
@@ -26,7 +28,7 @@ export default async function CompanionPage({
         </Button>
       </div>
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <CompanionProfileContent companion={companion} />
+        <CompanionProfileContent companion={companion} isAuthenticated={!!token} />
       </div>
     </div>
   )

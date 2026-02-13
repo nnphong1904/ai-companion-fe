@@ -8,8 +8,10 @@ import type { Companion } from "@/types/shared"
 
 export function CompanionModalClient({
   companion,
+  isAuthenticated = true,
 }: {
   companion: Companion | null
+  isAuthenticated?: boolean
 }) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(true)
@@ -54,6 +56,7 @@ export function CompanionModalClient({
               <CompanionProfileContent
                 companion={companion}
                 onNavigate={handleNavigate}
+                isAuthenticated={isAuthenticated}
               />
             ) : (
               <p className="py-12 text-center text-muted-foreground">

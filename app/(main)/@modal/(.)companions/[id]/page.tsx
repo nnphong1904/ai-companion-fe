@@ -1,4 +1,5 @@
-import { getCompanion } from "@/features/companions/queries"
+import { getCompanion, getPublicCompanion } from "@/features/companions/queries"
+import { getAuthToken } from "@/lib/api-fetch"
 import { CompanionModalClient } from "./modal-client"
 
 export default async function CompanionModalPage({
@@ -7,7 +8,8 @@ export default async function CompanionModalPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const companion = await getCompanion(id)
+  const token = await getAuthToken()
+  const companion = await (token ? getCompanion(id) : getPublicCompanion(id))
 
-  return <CompanionModalClient companion={companion} />
+  return <CompanionModalClient companion={companion} isAuthenticated={!!token} />
 }

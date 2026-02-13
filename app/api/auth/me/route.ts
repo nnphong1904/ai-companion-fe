@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server"
 import { getMe } from "@/features/auth/queries"
-import { ApiError } from "@/lib/api-fetch"
+import { ApiError, getAuthToken } from "@/lib/api-fetch"
 
 export async function GET() {
+  const token = await getAuthToken()
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   try {
     const user = await getMe()
     return NextResponse.json({ user })

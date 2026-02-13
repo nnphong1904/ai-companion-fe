@@ -60,6 +60,25 @@ export async function getDashboardCompanions(): Promise<{
   return { myCompanions, allCompanions }
 }
 
+// ─── Public (anonymous) queries via /browse ─────────────────────────────────
+
+export async function getPublicCompanions(): Promise<Companion[]> {
+  const companions = await fetchApi<BackendCompanion[] | null>("/browse/companions")
+  return (companions ?? []).map((c) => transformCompanion(c))
+}
+
+export async function getPublicCompanion(id: string): Promise<Companion | null> {
+  try {
+    const companion = await fetchApi<BackendCompanion>(`/browse/companions/${id}`)
+    return transformCompanion(companion)
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 404) return null
+    throw e
+  }
+}
+
+// ─── Authenticated queries ──────────────────────────────────────────────────
+
 export async function getCompanion(id: string): Promise<Companion | null> {
   let companion: BackendCompanion
   try {

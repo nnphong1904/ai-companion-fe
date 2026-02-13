@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, use, useEffect, useState, useTransition } from "react"
+import { createContext, use, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import * as authClient from "../auth-client"
 import type { User } from "../types"
@@ -23,20 +23,17 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({
+  children,
+  initialUser = null,
+}: {
+  children: React.ReactNode
+  initialUser?: User | null
+}) {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<User | null>(initialUser)
   const [, startTransition] = useTransition()
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Restore session on mount via httpOnly cookie
-  useEffect(() => {
-    authClient
-      .getMe()
-      .then(setUser)
-      .catch(() => {})
-      .finally(() => setIsLoading(false))
-  }, [])
+  const [isLoading, setIsLoading] = useState(false)
 
   async function login(email: string, password: string) {
     setIsLoading(true)

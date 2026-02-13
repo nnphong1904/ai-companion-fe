@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from "@/features/auth"
+import { getAuthToken } from "@/lib/api-fetch"
+import { getMe } from "@/features/auth/queries"
 import "./globals.css"
 
 const geistSans = Geist({
@@ -19,18 +21,21 @@ export const metadata: Metadata = {
   description: "Your personal AI companion — chat, connect, and create memories together.",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const token = await getAuthToken()
+  const initialUser = token ? await getMe().catch(() => null) : null
+
   return (
     <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <AuthProvider>
+        <AuthProvider initialUser={initialUser}>
           {children}
           <Toaster />
         </AuthProvider>

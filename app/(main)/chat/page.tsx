@@ -1,13 +1,51 @@
-import { MessageCircle } from "lucide-react"
+import { LogIn, MessageCircle, Search } from "lucide-react"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { MoodBadge } from "@/features/mood"
 import { formatRelativeTime } from "@/lib/format"
 import { getMyCompanions } from "@/features/companions/queries"
+import { getAuthToken } from "@/lib/api-fetch"
 
 export default async function ChatIndexPage() {
-  const companions = await getMyCompanions()
+  const token = await getAuthToken()
+  const companions = token ? await getMyCompanions().catch(() => []) : []
+
+  if (companions.length === 0) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4 px-4 py-20 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+          <MessageCircle className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <div className="space-y-1.5">
+          <h2 className="text-lg font-semibold">
+            {token ? "No conversations yet" : "Start chatting"}
+          </h2>
+          <p className="max-w-xs text-sm text-muted-foreground">
+            {token
+              ? "Pick a companion from the dashboard to start your first conversation."
+              : "Log in to start chatting with your AI companions."}
+          </p>
+        </div>
+        {token ? (
+          <Button asChild>
+            <Link href="/">
+              <Search className="mr-2 h-4 w-4" />
+              Browse Companions
+            </Link>
+          </Button>
+        ) : (
+          <Button asChild>
+            <Link href="/login">
+              <LogIn className="mr-2 h-4 w-4" />
+              Log In
+            </Link>
+          </Button>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="py-6">
