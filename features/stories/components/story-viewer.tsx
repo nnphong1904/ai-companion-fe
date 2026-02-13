@@ -35,11 +35,13 @@ export function StoryViewer({ viewer }: { viewer: StoriesViewer }) {
   const [isDesktop, setIsDesktop] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
+  // Reset visibility immediately when closed (no effect needed)
+  if (!isOpen && isVisible) {
+    setIsVisible(false)
+  }
+
   useEffect(() => {
-    if (!isOpen) {
-      setIsVisible(false)
-      return
-    }
+    if (!isOpen) return
     function measure() {
       if (measureRef.current) setCardWidth(measureRef.current.offsetWidth)
       setIsDesktop(window.innerWidth >= MD_BREAKPOINT)
@@ -111,7 +113,6 @@ export function StoryViewer({ viewer }: { viewer: StoriesViewer }) {
         "fixed inset-0 z-50 overflow-hidden transition-opacity duration-300",
         isVisible ? "opacity-100" : "opacity-0",
       )}
-      style={{ width: "100vw", height: "100dvh" }}
       onClick={close}
     >
       {/* Backdrop */}
