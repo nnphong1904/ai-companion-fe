@@ -9,7 +9,7 @@ const CompanionConstellation = dynamic(
 import { CompanionCardSkeleton } from "@/features/companions/companion-card-skeleton";
 import { StoriesSection } from "@/features/stories/components/stories-section";
 import { StoryRowSkeleton } from "@/features/stories/components/story-row-skeleton";
-import { CompanionAutoOpen } from "@/components/companion-auto-open";
+import { CompanionAutoOpen } from "@/features/companions/companion-auto-open";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   getDashboardCompanions,

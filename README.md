@@ -226,6 +226,13 @@ Public read policies allow the frontend to load media directly via CDN URLs with
 
 The stories feed (`GET /api/stories`) only returns stories from companions the authenticated user has connected with. This is achieved by joining `stories` with `relationship_states` on `(companion_id, user_id)` at the database level — no application-side filtering needed. Users who haven't selected any companions see an empty feed rather than content from strangers.
 
+### Message–Memory Linking
+
+Memories can optionally reference the source message via `message_id`. This enables two features:
+
+1. **`is_memorized` flag on messages** — The chat history query uses a correlated `EXISTS` subquery against the `memories` table to annotate each message with whether it has been saved as a memory. This avoids a separate API call and keeps the chat UI in sync.
+2. **Traceability** — When a user saves a message as a memory, the FK link preserves the origin. The partial index `idx_memories_message_id WHERE message_id IS NOT NULL` keeps the `EXISTS` lookup fast without indexing the majority of rows where `message_id` is NULL.
+
 ---
 
 ## Database Design & Scalability
@@ -257,17 +264,17 @@ I evaluated several database hosting options:
 
 9 tables with Row Level Security on all of them:
 
-| Table                 | Purpose                        | Key Index Strategy                                                                     |
-| --------------------- | ------------------------------ | -------------------------------------------------------------------------------------- |
-| `users`               | Authentication                 | Hash index on email for O(1) login lookup                                              |
-| `companions`          | AI character profiles          | Full table scan (5 rows, cached)                                                       |
-| `stories`             | Story metadata + expiry        | `(companion_id, created_at DESC)` for per-companion feed; joined with `relationship_states` to scope to user's connected companions |
-| `story_media`         | Ordered slides within stories  | `(story_id, sort_order)` for batch loading                                             |
-| `story_reactions`     | Emoji reactions (UPSERT)       | `UNIQUE(user_id, media_id)` for atomic upsert                                         |
-| `messages`            | Chat history                   | `(user_id, companion_id, created_at DESC)` for cursor pagination                       |
-| `relationship_states` | Mood + relationship scores     | `UNIQUE(user_id, companion_id)` for single-row lookup                                  |
-| `memories`            | Curated moments                | `(user_id, companion_id, pinned DESC, created_at DESC)` for pinned-first timeline      |
-| `mood_history`        | Daily mood snapshots           | `(user_id, companion_id, recorded_date)` for trend queries                             |
+| Table                 | Purpose                       | Key Index Strategy                                                                                                                  |
+| --------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `users`               | Authentication                | Hash index on email for O(1) login lookup                                                                                           |
+| `companions`          | AI character profiles         | Full table scan (5 rows, cached)                                                                                                    |
+| `stories`             | Story metadata + expiry       | `(companion_id, created_at DESC)` for per-companion feed; joined with `relationship_states` to scope to user's connected companions |
+| `story_media`         | Ordered slides within stories | `(story_id, sort_order)` for batch loading                                                                                          |
+| `story_reactions`     | Emoji reactions (UPSERT)      | `UNIQUE(user_id, media_id)` for atomic upsert                                                                                       |
+| `messages`            | Chat history                  | `(user_id, companion_id, created_at DESC)` for cursor pagination                                                                    |
+| `relationship_states` | Mood + relationship scores    | `UNIQUE(user_id, companion_id)` for single-row lookup                                                                               |
+| `memories`            | Curated moments               | `(user_id, companion_id, pinned DESC, created_at DESC, message_id)` for pinned-first timeline                                       |
+| `mood_history`        | Daily mood snapshots          | `(user_id, companion_id, recorded_date)` for trend queries                                                                          |
 
 ### Scalability Decisions
 
@@ -276,6 +283,7 @@ I evaluated several database hosting options:
 **Composite indexes following the left-prefix rule.** Every multi-column query has a matching composite index with equality columns first and range/sort columns last. For example, `idx_messages_conversation (user_id, companion_id, created_at DESC)` serves both the equality filter (`WHERE user_id = $1 AND companion_id = $2`) and the sort (`ORDER BY created_at DESC`) in a single index scan.
 
 **Redundant index elimination.** After the initial schema, I audited every index against actual query patterns and dropped 6 redundant indexes:
+
 - Single-column indexes that were already covered as left-prefixes of composite indexes (e.g., `idx_stories_companion_id` was redundant with `idx_stories_companion_created`)
 - A hash index on email that was redundant with the UNIQUE btree constraint
 - FK indexes on `companion_id` columns where no query ever filters by `companion_id` alone
@@ -289,6 +297,7 @@ Each redundant index slows every INSERT/UPDATE/DELETE for zero read benefit. Rem
 **UPSERT for atomic operations.** Story reactions use `INSERT ... ON CONFLICT (user_id, media_id) DO UPDATE SET reaction = $5` — a single atomic operation that handles both first-time reactions and reaction changes. No race conditions, no check-then-insert patterns.
 
 **Connection pooling with PgBouncer compatibility.** The database layer explicitly supports Supabase's transaction-mode PgBouncer:
+
 - Disables pgx prepared statement caching (`QueryExecModeExec`)
 - Uses simple protocol to avoid "prepared statement does not exist" errors
 - Maintains a pool of 20 max / 2 min connections
