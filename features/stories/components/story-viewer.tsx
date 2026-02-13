@@ -32,27 +32,33 @@ export function StoryViewer({ viewer }: { viewer: StoriesViewer }) {
 
   const measureRef = useRef<HTMLDivElement>(null)
   const [cardWidth, setCardWidth] = useState(0)
-  const [isDesktop, setIsDesktop] = useState(false)
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null)
   const [isVisible, setIsVisible] = useState(false)
 
-  // Reset visibility immediately when closed (no effect needed)
-  if (!isOpen && isVisible) {
-    setIsVisible(false)
-  }
+  // Reset state when closed
+  if (!isOpen && isVisible) setIsVisible(false)
+  if (!isOpen && isDesktop !== null) setIsDesktop(null)
 
+  // Detect layout on open
   useEffect(() => {
     if (!isOpen) return
-    function measure() {
-      if (measureRef.current) setCardWidth(measureRef.current.offsetWidth)
+    setIsDesktop(window.innerWidth >= MD_BREAKPOINT)
+    function onResize() {
       setIsDesktop(window.innerWidth >= MD_BREAKPOINT)
+      if (measureRef.current) setCardWidth(measureRef.current.offsetWidth)
     }
-    requestAnimationFrame(() => {
-      measure()
-      setIsVisible(true)
-    })
-    window.addEventListener("resize", measure)
-    return () => window.removeEventListener("resize", measure)
+    window.addEventListener("resize", onResize)
+    return () => window.removeEventListener("resize", onResize)
   }, [isOpen])
+
+  // Measure + animate after the correct layout mounts
+  useEffect(() => {
+    if (!isOpen || isDesktop === null) return
+    requestAnimationFrame(() => {
+      if (measureRef.current) setCardWidth(measureRef.current.offsetWidth)
+      requestAnimationFrame(() => setIsVisible(true))
+    })
+  }, [isOpen, isDesktop])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -89,7 +95,7 @@ export function StoryViewer({ viewer }: { viewer: StoriesViewer }) {
     }
   }, [isOpen])
 
-  if (!isOpen || activeStoryIndex < 0) return null
+  if (!isOpen || activeStoryIndex < 0 || isDesktop === null) return null
 
   // ── Mobile: fullscreen with drag gestures ──
   if (!isDesktop) {
