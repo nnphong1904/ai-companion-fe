@@ -17,6 +17,7 @@ type StoriesResponse = {
 function mediaToSlide(m: BackendStoryMedia): StorySlide {
   return {
     id: m.id,
+    storyId: m.story_id,
     type: m.media_type,
     content: m.media_url,
     duration: m.duration,
@@ -32,7 +33,7 @@ export async function getStories(): Promise<Story[]> {
   return groups.map((group) => {
     // Merge all media across the companion's stories into one slide list
     const slides = group.stories
-      .flatMap((s) => s.media)
+      .flatMap((s) => (s.media ?? []).map((m) => ({ ...m, story_id: m.story_id ?? s.id })))
       .sort((a, b) => a.sort_order - b.sort_order)
       .map(mediaToSlide);
 

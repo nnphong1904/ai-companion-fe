@@ -207,7 +207,7 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
 
   function react(emoji: string) {
     if (activeStory && activeSlide) {
-      onReact?.(activeStory.id, activeSlide.id, emoji)
+      onReact?.(activeSlide.storyId, activeSlide.id, emoji)
     }
   }
 
