@@ -27,3 +27,12 @@ export type InsightsData = {
     daysTogether: number
   }
 }
+
+export type ReactionType = "love" | "sad" | "heart_eyes" | "angry"
+
+export type ReactionSummary = {
+  total: number
+  counts: Record<ReactionType, number>
+  recent: { reaction: ReactionType; reactedAt: string }[]
+  dominantEmotion: ReactionType | null
+}

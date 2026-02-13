@@ -73,8 +73,9 @@ The feature also differentiates the product from competitors. Most AI companion 
 - **Interaction Streak** — Gamification that rewards daily engagement. Shows current streak, personal best, and a 7-dot weekly tracker. The fire/ice emoji toggle (🔥 active, ❄️ inactive) creates urgency — nobody wants to break a streak. Directly borrowed from Snapchat/Duolingo's proven retention mechanic.
 - **Milestones** — Achievement badges (First Chat, Chatterbox, Soulmate, Memory Keeper, etc.) that unlock as users hit thresholds. Locked milestones are visible but greyed out, showing users what's _possible_ and motivating them to unlock the next one. This creates long-term goals beyond day-to-day chatting.
 - **Quick Stats** — Total messages, memories saved, and days connected. Simple but effective at showing investment — "we've shared 142 messages over 14 days" makes the relationship feel real.
+- **Emotion Bloom** — A radial petal chart that visualizes how the user emotionally engages with a companion's stories through reactions. Each of the four reaction types (Love ❤️, Adoration 😍, Empathy 😢, Passion 😡) is rendered as a glowing SVG petal — petal size scales with reaction frequency, colors match the reaction's emotional tone, and a gentle breathing animation keeps the visualization alive. The center circle displays the total reaction count. An empty state with a muted placeholder encourages first-time engagement. This turns a write-only feature (reactions) into visible feedback — users can see _how_ they emotionally respond to each companion's content, reinforcing the bond narrative. It slots between Quick Stats and the Mood Sparkline on the insights page, answering "how do I engage with their stories?" right before "how has mood changed over time?"
 
-**Backend:** A dedicated `/companions/:id/insights` endpoint aggregates mood history (daily snapshots stored in `mood_history` table), streak calculation from message timestamps, milestone evaluation from aggregate counts, and quick stats — all computed on read to avoid additional write overhead.
+**Backend:** Two dedicated endpoints serve the insights page. `/companions/:id/insights` aggregates mood history (daily snapshots stored in `mood_history` table), streak calculation from message timestamps, milestone evaluation from aggregate counts, and quick stats — all computed on read to avoid additional write overhead. `/companions/:id/reactions/summary` aggregates reaction data by joining `story_reactions` → `story_media` → `stories` to produce per-type counts, recent reactions, and the dominant emotion — fetched in parallel with insights for zero additional latency.
 
 ### Feature 2: Companion Constellation
 
@@ -419,9 +420,10 @@ All migrations use `IF NOT EXISTS` / `IF EXISTS` guards and `ON CONFLICT DO NOTH
 
 ### Insights
 
-| Method | Endpoint                       | Description                             |
-| ------ | ------------------------------ | --------------------------------------- |
-| `GET`  | `/api/companions/:id/insights` | Mood history, streak, milestones, stats |
+| Method | Endpoint                                  | Description                             |
+| ------ | ----------------------------------------- | --------------------------------------- |
+| `GET`  | `/api/companions/:id/insights`            | Mood history, streak, milestones, stats |
+| `GET`  | `/api/companions/:id/reactions/summary`   | Reaction counts, recent, dominant emotion |
 
 All protected endpoints require `Authorization: Bearer <jwt>`.
 

@@ -1,7 +1,7 @@
 import "server-only"
 import { fetchApi } from "@/lib/api-fetch"
 import type { Mood } from "@/features/mood/types"
-import type { InsightsData } from "./types"
+import type { InsightsData, ReactionSummary, ReactionType } from "./types"
 
 // ─── Backend types ───────────────────────────────────────────────────────────
 
@@ -78,4 +78,40 @@ function transformInsights(b: BackendInsights): InsightsData {
 export async function getInsights(companionId: string): Promise<InsightsData> {
   const data = await fetchApi<BackendInsights>(`/companions/${companionId}/insights`)
   return transformInsights(data)
+}
+
+// ─── Reaction Summary ───────────────────────────────────────────────────────
+
+type BackendReactionSummary = {
+  total: number
+  counts: Record<string, number>
+  recent: { reaction: string; reacted_at: string }[] | null
+  dominant_emotion: string | null
+}
+
+function transformReactionSummary(b: BackendReactionSummary): ReactionSummary {
+  return {
+    total: b.total,
+    counts: {
+      love: b.counts.love ?? 0,
+      sad: b.counts.sad ?? 0,
+      heart_eyes: b.counts.heart_eyes ?? 0,
+      angry: b.counts.angry ?? 0,
+    },
+    recent: (b.recent ?? []).map((r) => ({
+      reaction: r.reaction as ReactionType,
+      reactedAt: r.reacted_at,
+    })),
+    dominantEmotion: (b.dominant_emotion as ReactionType) ?? null,
+  }
+}
+
+export async function getReactionSummary(
+  companionId: string,
+): Promise<ReactionSummary | null> {
+  const data = await fetchApi<BackendReactionSummary>(
+    `/companions/${companionId}/reactions/summary`,
+  ).catch(() => null)
+  if (!data) return null
+  return transformReactionSummary(data)
 }

@@ -5,7 +5,7 @@ import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { CompanionInsights } from "@/features/insights/components/companion-insights"
 import { getCompanion } from "@/features/companions/queries"
-import { getInsights } from "@/features/insights/queries"
+import { getInsights, getReactionSummary } from "@/features/insights/queries"
 
 export async function generateMetadata({
   params,
@@ -29,7 +29,10 @@ export default async function InsightsPage({
 
   if (!companion) notFound()
 
-  const insights = await getInsights(id)
+  const [insights, reactions] = await Promise.all([
+    getInsights(id),
+    getReactionSummary(id),
+  ])
 
   return (
     <div className="mx-auto max-w-lg py-4">
@@ -42,7 +45,7 @@ export default async function InsightsPage({
         </Button>
         <h1 className="text-sm font-medium text-muted-foreground">Relationship Insights</h1>
       </div>
-      <CompanionInsights companion={companion} insights={insights} />
+      <CompanionInsights companion={companion} insights={insights} reactions={reactions} />
     </div>
   )
 }

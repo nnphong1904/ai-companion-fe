@@ -5,15 +5,18 @@ import { MoodSparkline } from "./mood-sparkline"
 import { StreakCounter } from "./streak-counter"
 import { QuickStats } from "./quick-stats"
 import { Milestones } from "./milestones"
+import { EmotionBloom } from "./emotion-bloom"
 import type { Companion } from "@/types/shared"
-import type { InsightsData } from "../types"
+import type { InsightsData, ReactionSummary } from "../types"
 
 export function CompanionInsights({
   companion,
   insights,
+  reactions,
 }: {
   companion: Companion
   insights: InsightsData
+  reactions: ReactionSummary | null
 }) {
   const currentScore = insights.moodHistory.length > 0
     ? insights.moodHistory[insights.moodHistory.length - 1].score
@@ -35,6 +38,9 @@ export function CompanionInsights({
         totalMemories={insights.stats.totalMemories}
         daysTogether={insights.stats.daysTogether}
       />
+
+      {/* Emotion Bloom — Reaction Visualization */}
+      {reactions && <EmotionBloom reactions={reactions} />}
 
       {/* Mood History Sparkline */}
       <MoodSparkline

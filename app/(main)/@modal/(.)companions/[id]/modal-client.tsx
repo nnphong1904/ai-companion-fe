@@ -12,7 +12,7 @@ import { CompanionInsights } from "@/features/insights/components/companion-insi
 import { cn } from "@/lib/utils"
 import type { Companion } from "@/types/shared"
 import type { Memory } from "@/features/memories/types"
-import type { InsightsData } from "@/features/insights/types"
+import type { InsightsData, ReactionSummary } from "@/features/insights/types"
 
 type ModalView = "profile" | "memories" | "insights"
 
@@ -28,12 +28,14 @@ export function CompanionModalClient({
   companion,
   memories,
   insights,
+  reactions,
   isAuthenticated = true,
   initialView,
 }: {
   companion: Companion | null
   memories: Memory[]
   insights: InsightsData | null
+  reactions: ReactionSummary | null
   isAuthenticated?: boolean
   initialView?: "memories" | "insights"
 }) {
@@ -166,6 +168,7 @@ export function CompanionModalClient({
                         <CompanionInsights
                           companion={companion}
                           insights={insights}
+                          reactions={reactions}
                         />
                       </div>
                     </ScrollArea>
