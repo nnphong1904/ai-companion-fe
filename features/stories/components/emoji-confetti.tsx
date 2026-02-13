@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useState } from "react"
-import { createPortal } from "react-dom"
+import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 type ParticleDef = {
-  id: number
-  emoji: string
-  x: number
-  y: number
-  dx: number
-  dy: number
-  rotation: number
-  endScale: number
-  duration: number
-}
+  id: number;
+  emoji: string;
+  x: number;
+  y: number;
+  dx: number;
+  dy: number;
+  rotation: number;
+  endScale: number;
+  duration: number;
+};
 
-let nextId = 0
+let nextId = 0;
 
 function Particle({
   emoji,
@@ -28,20 +28,19 @@ function Particle({
   duration,
   onDone,
 }: ParticleDef & { onDone: () => void }) {
-  const [settled, setSettled] = useState(false)
+  const [settled, setSettled] = useState(false);
 
   useEffect(() => {
     // Double rAF ensures the initial render is painted before the transition starts
     const raf = requestAnimationFrame(() => {
-      requestAnimationFrame(() => setSettled(true))
-    })
-    const timer = setTimeout(onDone, duration + 50)
+      requestAnimationFrame(() => setSettled(true));
+    });
+    const timer = setTimeout(onDone, duration + 50);
     return () => {
-      cancelAnimationFrame(raf)
-      clearTimeout(timer)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+      cancelAnimationFrame(raf);
+      clearTimeout(timer);
+    };
+  }, [duration, onDone]);
 
   return (
     <span
@@ -62,23 +61,22 @@ function Particle({
     >
       {emoji}
     </span>
-  )
+  );
 }
 
 export function useEmojiConfetti() {
-  const [particles, setParticles] = useState<ParticleDef[]>([])
+  const [particles, setParticles] = useState<ParticleDef[]>([]);
 
   const removeParticle = useCallback((id: number) => {
-    setParticles((prev) => prev.filter((p) => p.id !== id))
-  }, [])
+    setParticles((prev) => prev.filter((p) => p.id !== id));
+  }, []);
 
   const trigger = useCallback((emoji: string, x: number, y: number) => {
-    const count = 7 + Math.floor(Math.random() * 4) // 7-10
+    const count = 7 + Math.floor(Math.random() * 4); // 7-10
     const batch: ParticleDef[] = Array.from({ length: count }, () => {
       // Fan upward: angles between -150° and -30° (upper hemisphere, wide spread)
-      const angle =
-        -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 0.9
-      const speed = 90 + Math.random() * 180
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 0.9;
+      const speed = 90 + Math.random() * 180;
       return {
         id: nextId++,
         emoji,
@@ -89,26 +87,22 @@ export function useEmojiConfetti() {
         rotation: (Math.random() - 0.5) * 540,
         endScale: 0.3 + Math.random() * 0.5,
         duration: 600 + Math.random() * 600,
-      }
-    })
-    setParticles((prev) => [...prev, ...batch])
-  }, [])
+      };
+    });
+    setParticles((prev) => [...prev, ...batch]);
+  }, []);
 
   const confetti =
     particles.length > 0
       ? createPortal(
           <div className="pointer-events-none fixed inset-0 z-[100] overflow-hidden">
             {particles.map((p) => (
-              <Particle
-                key={p.id}
-                {...p}
-                onDone={() => removeParticle(p.id)}
-              />
+              <Particle key={p.id} {...p} onDone={() => removeParticle(p.id)} />
             ))}
           </div>,
           document.body,
         )
-      : null
+      : null;
 
-  return { confetti, trigger }
+  return { confetti, trigger };
 }

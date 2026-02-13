@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { usePrefetchSlides } from "./use-prefetch-slides"
 import type { Story } from "../types"
 
 type UseStoriesViewerArgs = {
@@ -87,6 +88,8 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
   function setActiveSlideDuration(durationMs: number) {
     startTimer(durationMs)
   }
+
+  usePrefetchSlides(stories, activeStoryIndex, activeSlideIndex)
 
   // Keep advanceRef in sync — safe inside useEffect
   useEffect(() => {

@@ -1,16 +1,16 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ActiveStoryCard } from "./active-story-card"
 import { PreviewStoryCard } from "./preview-story-card"
 import { MobileStoryViewer } from "./mobile-story-viewer"
+import { useViewerLayout } from "../hooks/use-viewer-layout"
+import { useKeyboardShortcuts } from "../hooks/use-keyboard-shortcuts"
 import type { StoriesViewer } from "../hooks/use-stories"
 
 const DESKTOP_GAP = 12
-const MD_BREAKPOINT = 768
 
 export function StoryViewer({ viewer }: { viewer: StoriesViewer }) {
   const {
@@ -30,70 +30,17 @@ export function StoryViewer({ viewer }: { viewer: StoriesViewer }) {
     setActiveSlideDuration,
   } = viewer
 
-  const measureRef = useRef<HTMLDivElement>(null)
-  const [cardWidth, setCardWidth] = useState(0)
-  const [isDesktop, setIsDesktop] = useState<boolean | null>(null)
-  const [isVisible, setIsVisible] = useState(false)
+  const { isDesktop, isVisible, cardWidth, measureRef } = useViewerLayout(isOpen)
 
-  // Reset state when closed
-  if (!isOpen && isVisible) setIsVisible(false)
-  if (!isOpen && isDesktop !== null) setIsDesktop(null)
-
-  // Detect layout on open
-  useEffect(() => {
-    if (!isOpen) return
-    setIsDesktop(window.innerWidth >= MD_BREAKPOINT)
-    function onResize() {
-      setIsDesktop(window.innerWidth >= MD_BREAKPOINT)
-      if (measureRef.current) setCardWidth(measureRef.current.offsetWidth)
-    }
-    window.addEventListener("resize", onResize)
-    return () => window.removeEventListener("resize", onResize)
-  }, [isOpen])
-
-  // Measure + animate after the correct layout mounts
-  useEffect(() => {
-    if (!isOpen || isDesktop === null) return
-    requestAnimationFrame(() => {
-      if (measureRef.current) setCardWidth(measureRef.current.offsetWidth)
-      requestAnimationFrame(() => setIsVisible(true))
-    })
-  }, [isOpen, isDesktop])
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    if (!isOpen) return
-    function handleKeyDown(e: KeyboardEvent) {
-      switch (e.key) {
-        case "Escape":
-          close()
-          break
-        case "ArrowLeft":
-          goPrev()
-          break
-        case "ArrowRight":
-          goNext()
-          break
-        case " ":
-          e.preventDefault()
-          if (isPaused) resumeTimer()
-          else pauseTimer()
-          break
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isOpen, close, goNext, goPrev, isPaused, pauseTimer, resumeTimer])
-
-  // Lock body scroll when open
-  useEffect(() => {
-    if (!isOpen) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = "hidden"
-    return () => {
-      document.body.style.overflow = prev
-    }
-  }, [isOpen])
+  useKeyboardShortcuts({
+    isOpen,
+    onClose: close,
+    onNext: goNext,
+    onPrev: goPrev,
+    isPaused,
+    onPause: pauseTimer,
+    onResume: resumeTimer,
+  })
 
   if (!isOpen || activeStoryIndex < 0 || isDesktop === null) return null
 

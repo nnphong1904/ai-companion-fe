@@ -101,7 +101,7 @@ export function HeroCompanionCard({
 
   return (
     <div
-      className="group relative h-[200px] overflow-hidden rounded-2xl border border-white/[0.06] sm:h-[240px]"
+      className="group relative overflow-hidden rounded-2xl border border-white/[0.06] sm:h-[240px]"
       style={{ animation: "hero-entrance 0.5s ease-out both" }}
     >
       {/* Dark base + mood gradient */}
@@ -132,7 +132,7 @@ export function HeroCompanionCard({
       </svg>
 
       {/* Content */}
-      <div className="relative flex h-full flex-col items-center justify-center gap-3 px-5 py-4 sm:flex-row sm:gap-5 sm:px-6">
+      <div className="relative flex items-center gap-3.5 px-4 py-4 sm:gap-5 sm:px-6 sm:py-6">
         {/* Avatar with aura ring */}
         <Link
           href={`/companions/${companion.id}`}
@@ -142,7 +142,7 @@ export function HeroCompanionCard({
           <div className="relative flex items-center justify-center">
             {/* Glow layer */}
             <div
-              className="absolute h-20 w-20 rounded-full sm:h-24 sm:w-24"
+              className="absolute h-16 w-16 rounded-full sm:h-24 sm:w-24"
               style={{
                 boxShadow: `0 0 40px 8px ${mood.auraGlow}, 0 0 80px 30px ${mood.auraGlow}`,
                 animation: `aura-pulse ${pulseDuration}s ease-in-out infinite`,
@@ -151,7 +151,7 @@ export function HeroCompanionCard({
 
             {/* Rotating gradient ring */}
             <div
-              className="absolute h-20 w-20 rounded-full sm:h-24 sm:w-24"
+              className="absolute h-16 w-16 rounded-full sm:h-24 sm:w-24"
               style={{
                 background: `conic-gradient(from 0deg, ${mood.auraColors[0]}, ${mood.auraColors[1]}, ${mood.auraColors[2]}, ${mood.auraColors[1]}, ${mood.auraColors[0]})`,
                 animation: "aura-spin 6s linear infinite",
@@ -159,12 +159,12 @@ export function HeroCompanionCard({
             />
 
             {/* Inner mask — creates the ring */}
-            <div className="absolute h-[72px] w-[72px] rounded-full bg-[#0a0a12] sm:h-[88px] sm:w-[88px]" />
+            <div className="absolute h-[56px] w-[56px] rounded-full bg-[#0a0a12] sm:h-[88px] sm:w-[88px]" />
 
             {/* Avatar */}
-            <Avatar className="relative h-16 w-16 sm:h-20 sm:w-20">
+            <Avatar className="relative h-12 w-12 sm:h-20 sm:w-20">
               <AvatarImage src={companion.avatarUrl} alt={companion.name} />
-              <AvatarFallback className="text-2xl">
+              <AvatarFallback className="text-xl sm:text-2xl">
                 {companion.name[0]}
               </AvatarFallback>
             </Avatar>
@@ -172,41 +172,41 @@ export function HeroCompanionCard({
         </Link>
 
         {/* Info section */}
-        <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:items-start">
-          {/* Name + mood */}
-          <div className="space-y-1 text-center sm:text-left">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:gap-2">
+          {/* Name + description */}
+          <div className="space-y-0.5 sm:space-y-1">
             <Link
               href={`/companions/${companion.id}`}
               scroll={false}
               className="block"
             >
-              <h3 className="text-lg font-bold tracking-tight text-white transition-colors group-hover:text-white/90 sm:text-xl">
+              <h3 className="text-base font-bold tracking-tight text-white transition-colors group-hover:text-white/90 sm:text-xl">
                 {companion.name}
               </h3>
             </Link>
-            <p className="line-clamp-2 text-sm text-white/50">
+            <p className="line-clamp-1 text-xs text-white/50 sm:line-clamp-2 sm:text-sm">
               {companion.description}
             </p>
           </div>
 
           {/* Mood badge + last interaction */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <span
               className={cn(
-                "flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium backdrop-blur-sm",
+                "flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium backdrop-blur-sm sm:px-2.5 sm:text-xs",
                 moodConfig.color,
                 moodConfig.textColor,
               )}
             >
               {moodConfig.emoji} {moodConfig.label}
             </span>
-            <span className="text-xs text-white/40">
+            <span className="text-[11px] text-white/40 sm:text-xs">
               {formatRelativeTime(companion.lastInteraction)}
             </span>
           </div>
 
           {/* Relationship bar */}
-          <div className="w-full max-w-[240px] space-y-1">
+          <div className="max-w-[200px] space-y-0.5 sm:max-w-[240px] sm:space-y-1">
             <div className="flex gap-1">
               {Array.from({ length: 5 }, (_, i) => {
                 const threshold = i * 20
@@ -218,7 +218,7 @@ export function HeroCompanionCard({
                   <div
                     key={i}
                     className={cn(
-                      "h-1.5 flex-1 rounded-full transition-colors",
+                      "h-1 flex-1 rounded-full transition-colors sm:h-1.5",
                       isFilled
                         ? mood.dotClass
                         : isPartial
@@ -230,10 +230,10 @@ export function HeroCompanionCard({
               })}
             </div>
             <div className="flex items-center justify-between">
-              <span className={cn("text-xs font-medium", mood.accentText)}>
+              <span className={cn("text-[11px] font-medium sm:text-xs", mood.accentText)}>
                 {relationshipLabel}
               </span>
-              <span className="text-[11px] text-white/30">
+              <span className="text-[10px] text-white/30 sm:text-[11px]">
                 {companion.relationshipLevel}%
               </span>
             </div>
@@ -241,24 +241,24 @@ export function HeroCompanionCard({
         </div>
 
         {/* Action buttons */}
-        <div className="flex shrink-0 gap-2 sm:self-center">
+        <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:self-center">
           <Link
             href={`/chat/${companion.id}`}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:border-white/20 hover:bg-white/10"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:border-white/20 hover:bg-white/10 sm:h-9 sm:w-9"
           >
-            <MessageCircle className="h-4 w-4" />
+            <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Link>
           <button
             onClick={() => router.push(`/companions/${companion.id}?view=memories`, { scroll: false })}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:border-white/20 hover:bg-white/10"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:border-white/20 hover:bg-white/10 sm:h-9 sm:w-9"
           >
-            <BookOpen className="h-4 w-4" />
+            <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
           <button
             onClick={() => router.push(`/companions/${companion.id}?view=insights`, { scroll: false })}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:border-white/20 hover:bg-white/10"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:border-white/20 hover:bg-white/10 sm:h-9 sm:w-9"
           >
-            <TrendingUp className="h-4 w-4" />
+            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
         </div>
       </div>

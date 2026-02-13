@@ -13,7 +13,13 @@ import {
   getDashboardCompanions,
   getPublicCompanions,
 } from "@/features/companions/queries";
+import {
+  getHeroCompanion,
+  getRemainingCompanions,
+  getAvailableCompanions,
+} from "@/features/companions/lib/companions-utils";
 import { getStories } from "@/features/stories/queries";
+import { preloadStoryAssets } from "@/features/stories/lib/prefetch";
 import { getAuthToken } from "@/lib/api-fetch";
 
 async function StoriesBlock() {
@@ -22,6 +28,9 @@ async function StoriesBlock() {
 
   const stories = await getStories().catch(() => []);
   if (stories.length === 0) return null;
+
+  preloadStoryAssets(stories);
+
   return <StoriesSection initialStories={stories} />;
 }
 
@@ -32,11 +41,8 @@ async function TopRow() {
   const { myCompanions } = await getDashboardCompanions();
   if (myCompanions.length === 0) return null;
 
-  // Hero = highest relationship level
-  const sorted = [...myCompanions].sort(
-    (a, b) => b.relationshipLevel - a.relationshipLevel,
-  );
-  const heroCompanion = sorted[0];
+  const heroCompanion = getHeroCompanion(myCompanions);
+  if (!heroCompanion) return null;
   const showConstellation = myCompanions.length >= 2;
 
   return (
@@ -79,19 +85,13 @@ async function CompanionsBlock() {
   }
 
   const { myCompanions, allCompanions } = await getDashboardCompanions();
-  const myIds = new Set(myCompanions.map((c) => c.id));
-  const availableCompanions = allCompanions.filter((c) => !myIds.has(c.id));
-
-  // Remove the hero companion from the grid (highest relationship)
-  const sorted = [...myCompanions].sort(
-    (a, b) => b.relationshipLevel - a.relationshipLevel,
-  );
-  const remainingCompanions = sorted.slice(1);
+  const remainingCompanions = getRemainingCompanions(myCompanions);
+  const available = getAvailableCompanions(allCompanions, myCompanions);
 
   return (
     <CompanionsGrid
       companions={remainingCompanions}
-      availableCompanions={availableCompanions}
+      availableCompanions={available}
       isAuthenticated
     />
   );
