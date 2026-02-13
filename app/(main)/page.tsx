@@ -3,16 +3,16 @@ import { CompanionsGrid, CompanionConstellation } from "@/features/companions"
 import { CompanionCardSkeleton } from "@/features/companions"
 import { StoriesSection } from "@/features/stories"
 import { StoryRowSkeleton } from "@/features/stories"
+import { CompanionAutoOpen } from "@/components/companion-auto-open"
 import { getDashboardCompanions, getPublicCompanions } from "@/features/companions/queries"
 import { getStories } from "@/features/stories/queries"
 import { getAuthToken } from "@/lib/api-fetch"
 
 async function StoriesBlock() {
-  const stories = await getStories().catch((e) => {
-    console.error("[StoriesBlock] getStories failed:", e)
-    return []
-  })
-  console.log("[StoriesBlock] stories count:", stories.length)
+  const token = await getAuthToken()
+  if (!token) return null
+
+  const stories = await getStories().catch(() => [])
   if (stories.length === 0) return null
   return <StoriesSection initialStories={stories} />
 }
@@ -69,6 +69,10 @@ function CompanionsGridSkeleton() {
 export default function DashboardPage() {
   return (
     <div className="space-y-8 py-6">
+      <Suspense>
+        <CompanionAutoOpen />
+      </Suspense>
+
       <header className="px-4">
         <h1 className="text-2xl font-bold">Dashboard</h1>
       </header>

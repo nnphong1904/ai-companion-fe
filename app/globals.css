@@ -123,6 +123,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  [data-slot="scroll-area-viewport"] {
+    overscroll-behavior: contain;
+  }
 }
 
 @layer utilities {
@@ -133,4 +136,9 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+}
+
+@keyframes card-glow-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
