@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { cn } from "@/lib/utils"
 import type { Companion } from "@/types/shared"
 import type { Mood } from "@/features/mood/types"
@@ -24,18 +24,22 @@ const LINE_COLORS: Record<Mood, string> = {
 
 // ─── Background stars ────────────────────────────────────────────────────────
 
+function fract(n: number) {
+  return Math.round((n - Math.floor(n)) * 1e6) / 1e6
+}
+
 function generateBgStars(count: number, w: number, h: number) {
   const seed = 42
   const stars: { x: number; y: number; r: number; delay: number }[] = []
   for (let i = 0; i < count; i++) {
-    const hash = Math.sin(seed + i * 127.1) * 43758.5453
-    const hash2 = Math.sin(seed + i * 269.5) * 12345.6789
-    const hash3 = Math.sin(seed + i * 419.2) * 98765.4321
+    const f1 = fract(Math.sin(seed + i * 127.1) * 43758.5453)
+    const f2 = fract(Math.sin(seed + i * 269.5) * 12345.6789)
+    const f3 = fract(Math.sin(seed + i * 419.2) * 98765.4321)
     stars.push({
-      x: (hash - Math.floor(hash)) * w,
-      y: (hash2 - Math.floor(hash2)) * h,
-      r: 0.5 + (hash3 - Math.floor(hash3)) * 1,
-      delay: (hash - Math.floor(hash)) * 5,
+      x: Math.round(f1 * w * 100) / 100,
+      y: Math.round(f2 * h * 100) / 100,
+      r: Math.round((0.5 + f3) * 100) / 100,
+      delay: Math.round(f1 * 5 * 100) / 100,
     })
   }
   return stars
@@ -71,7 +75,6 @@ export function CompanionConstellation({
 }: {
   companions: Companion[]
 }) {
-  const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const [dims, setDims] = useState({ w: 400, h: 300 })
   const [hoveredId, setHoveredId] = useState<string | null>(null)
@@ -204,10 +207,8 @@ export function CompanionConstellation({
             return (
               <g
                 key={companion.id}
-                className="cursor-pointer"
                 onMouseEnter={() => setHoveredId(companion.id)}
                 onMouseLeave={() => setHoveredId(null)}
-                onClick={() => router.push(`/companions/${companion.id}`)}
               >
                 {/* Glow ring on hover */}
                 <circle
@@ -279,6 +280,24 @@ export function CompanionConstellation({
             )
           })}
         </svg>
+
+        {/* Link overlays — positioned on top of each star for Next.js client navigation */}
+        {positions.map(({ companion, x, y, size }) => (
+          <Link
+            key={`link-${companion.id}`}
+            href={`/companions/${companion.id}`}
+            scroll={false}
+            className="absolute rounded-full"
+            style={{
+              left: x - size - 8,
+              top: y - size - 8,
+              width: (size + 8) * 2,
+              height: (size + 8) * 2,
+            }}
+            onMouseEnter={() => setHoveredId(companion.id)}
+            onMouseLeave={() => setHoveredId(null)}
+          />
+        ))}
       </div>
     </section>
   )
