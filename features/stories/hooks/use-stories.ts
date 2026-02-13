@@ -9,6 +9,8 @@ type UseStoriesViewerArgs = {
   onReact?: (storyId: string, slideId: string, emoji: string) => void
 }
 
+export type StoriesViewer = ReturnType<typeof useStoriesViewer>
+
 export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesViewerArgs) {
   const [activeStoryIndex, setActiveStoryIndex] = useState(-1)
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
@@ -182,6 +184,24 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
     }
   }
 
+  function goToStory(index: number) {
+    if (index < 0 || index >= stories.length) return
+    setActiveStoryIndex(index)
+    setActiveSlideIndex(0)
+    setProgress(0)
+    setIsPaused(false)
+    const story = stories[index]
+    if (story && !story.viewed) {
+      onMarkViewed?.(story.id)
+    }
+    const slide = story?.slides[0]
+    if (slide?.type === "video") {
+      clearTimer()
+    } else {
+      startTimer((slide?.duration ?? 5) * 1000)
+    }
+  }
+
   function react(emoji: string) {
     if (activeStory && activeSlide) {
       onReact?.(activeStory.id, activeSlide.id, emoji)
@@ -190,6 +210,8 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
 
   return {
     isOpen,
+    stories,
+    activeStoryIndex,
     activeStory,
     activeSlide,
     activeSlideIndex,
@@ -199,9 +221,10 @@ export function useStoriesViewer({ stories, onMarkViewed, onReact }: UseStoriesV
     close,
     goNext,
     goPrev,
+    goToStory,
     react,
     pauseTimer,
     resumeTimer,
     setActiveSlideDuration,
-  }
+  } as const
 }

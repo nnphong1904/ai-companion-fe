@@ -1,23 +1,72 @@
 "use client"
 
-import { useRef, useState } from "react"
-import { sendMessage as sendMessageAction, saveMemory as saveMemoryAction } from "@/features/chat/actions"
+import { useCallback, useRef, useState } from "react"
+import { toast } from "sonner"
+import {
+  sendMessage as sendMessageAction,
+  saveMemory as saveMemoryAction,
+  loadMoreMessages,
+} from "@/features/chat/actions"
 import type { Message } from "../types"
 
 type UseChatOptions = {
   companionId: string
   initialMessages: Message[]
+  initialCursor?: string | null
+  initialHasMore?: boolean
 }
 
-export function useChat({ companionId, initialMessages }: UseChatOptions) {
+export function useChat({
+  companionId,
+  initialMessages,
+  initialCursor = null,
+  initialHasMore = false,
+}: UseChatOptions) {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [isSending, setIsSending] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [showScrollButton, setShowScrollButton] = useState(false)
+  const [hasMore, setHasMore] = useState(initialHasMore)
+  const cursorRef = useRef<string | null>(initialCursor)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  function scrollToBottom() {
+  const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
     })
+  }, [])
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+    setShowScrollButton(distanceFromBottom > 200)
+  }, [])
+
+  async function loadOlderMessages() {
+    if (isLoadingMore || !hasMore || !cursorRef.current) return
+
+    const el = scrollRef.current
+    const prevHeight = el?.scrollHeight ?? 0
+
+    setIsLoadingMore(true)
+    try {
+      const result = await loadMoreMessages(companionId, cursorRef.current)
+      setMessages((prev) => [...result.messages, ...prev])
+      cursorRef.current = result.nextCursor
+      setHasMore(result.hasMore)
+
+      // Preserve scroll position after prepending
+      requestAnimationFrame(() => {
+        if (el) {
+          el.scrollTop = el.scrollHeight - prevHeight
+        }
+      })
+    } catch {
+      toast.error("Failed to load older messages")
+    } finally {
+      setIsLoadingMore(false)
+    }
   }
 
   async function sendMessage(content: string) {
@@ -46,6 +95,9 @@ export function useChat({ companionId, initialMessages }: UseChatOptions) {
         return [...withoutOptimistic, userMessage, companionMessage]
       })
       scrollToBottom()
+    } catch {
+      toast.error("Failed to send message")
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id))
     } finally {
       setIsSending(false)
     }
@@ -61,10 +113,12 @@ export function useChat({ companionId, initialMessages }: UseChatOptions) {
 
     try {
       await saveMemoryAction(companionId, msg.content)
+      toast.success("Memory saved")
     } catch {
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, isMemory: false } : m)),
       )
+      toast.error("Failed to save memory")
     }
   }
 
@@ -72,9 +126,14 @@ export function useChat({ companionId, initialMessages }: UseChatOptions) {
     messages,
     isLoading: false,
     isSending,
+    isLoadingMore,
+    hasMore,
+    showScrollButton,
     scrollRef,
     sendMessage,
     saveMemory,
     scrollToBottom,
+    handleScroll,
+    loadOlderMessages,
   }
 }

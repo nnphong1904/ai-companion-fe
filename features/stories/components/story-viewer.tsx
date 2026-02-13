@@ -1,295 +1,186 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { X } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
-import type { Story, StorySlide } from "../types"
+import { ActiveStoryCard } from "./active-story-card"
+import { PreviewStoryCard } from "./preview-story-card"
+import { MobileStoryViewer } from "./mobile-story-viewer"
+import type { StoriesViewer } from "../hooks/use-stories"
 
-const REACTIONS = ["❤️", "😢", "😍", "😡"] as const
+const DESKTOP_GAP = 12
+const MD_BREAKPOINT = 768
 
-function ProgressBars({
-  total,
-  current,
-  progress,
-  isPaused,
-}: {
-  total: number
-  current: number
-  progress: number
-  isPaused?: boolean
-}) {
-  return (
-    <div className="flex gap-1 px-3 pt-3">
-      {Array.from({ length: total }, (_, i) => (
-        <div key={i} className="h-0.5 flex-1 overflow-hidden rounded-full bg-white/30">
-          <div
-            className={cn(
-              "h-full rounded-full bg-white transition-all duration-100 ease-linear",
-              isPaused && i === current && "transition-none",
-            )}
-            style={{
-              width:
-                i < current ? "100%" : i === current ? `${progress}%` : "0%",
-            }}
-          />
-        </div>
-      ))}
-    </div>
-  )
-}
+export function StoryViewer({ viewer }: { viewer: StoriesViewer }) {
+  const {
+    isOpen,
+    stories,
+    activeStoryIndex,
+    activeSlideIndex,
+    progress,
+    isPaused,
+    close,
+    goNext,
+    goPrev,
+    goToStory,
+    react,
+    pauseTimer,
+    resumeTimer,
+    setActiveSlideDuration,
+  } = viewer
 
-function SlideContent({
-  slide,
-  isPaused,
-  onDurationResolved,
-}: {
-  slide: StorySlide
-  isPaused?: boolean
-  onDurationResolved?: (durationMs: number) => void
-}) {
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const measureRef = useRef<HTMLDivElement>(null)
+  const [cardWidth, setCardWidth] = useState(0)
+  const [isDesktop, setIsDesktop] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    if (slide.type !== "video" || !videoRef.current) return
-    if (isPaused) {
-      videoRef.current.pause()
-    } else {
-      videoRef.current.play().catch(() => {})
+    if (!isOpen) {
+      setIsVisible(false)
+      return
     }
-  }, [isPaused, slide.type])
+    function measure() {
+      if (measureRef.current) setCardWidth(measureRef.current.offsetWidth)
+      setIsDesktop(window.innerWidth >= MD_BREAKPOINT)
+    }
+    requestAnimationFrame(() => {
+      measure()
+      setIsVisible(true)
+    })
+    window.addEventListener("resize", measure)
+    return () => window.removeEventListener("resize", measure)
+  }, [isOpen])
 
-  return (
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!isOpen) return
+    function handleKeyDown(e: KeyboardEvent) {
+      switch (e.key) {
+        case "Escape":
+          close()
+          break
+        case "ArrowLeft":
+          goPrev()
+          break
+        case "ArrowRight":
+          goNext()
+          break
+        case " ":
+          e.preventDefault()
+          if (isPaused) resumeTimer()
+          else pauseTimer()
+          break
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isOpen, close, goNext, goPrev, isPaused, pauseTimer, resumeTimer])
+
+  // Lock body scroll when open
+  useEffect(() => {
+    if (!isOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [isOpen])
+
+  if (!isOpen || activeStoryIndex < 0) return null
+
+  // ── Mobile: fullscreen with drag gestures ──
+  if (!isDesktop) {
+    return <MobileStoryViewer viewer={viewer} isVisible={isVisible} />
+  }
+
+  // ── Desktop: card carousel ──
+  function handleSwipeLeft() {
+    if (activeStoryIndex < stories.length - 1) goToStory(activeStoryIndex + 1)
+  }
+
+  function handleSwipeRight() {
+    if (activeStoryIndex > 0) goToStory(activeStoryIndex - 1)
+  }
+
+  const step = cardWidth + DESKTOP_GAP
+
+  return createPortal(
     <div
       className={cn(
-        "flex flex-1 items-center justify-center p-8",
-        "animate-in fade-in zoom-in-[0.98] duration-300",
-        slide.type === "text" && "bg-gradient-to-br",
-        slide.backgroundColor,
+        "fixed inset-0 z-50 overflow-hidden transition-opacity duration-300",
+        isVisible ? "opacity-100" : "opacity-0",
       )}
+      style={{ width: "100vw", height: "100dvh" }}
+      onClick={close}
     >
-      {slide.type === "text" ? (
-        <p className="max-w-sm text-center text-xl font-medium leading-relaxed text-white">
-          {slide.content}
-        </p>
-      ) : slide.type === "video" ? (
-        <video
-          ref={videoRef}
-          src={slide.content}
-          autoPlay
-          muted
-          playsInline
-          className="max-h-full max-w-full rounded-lg object-contain"
-          onLoadedMetadata={(e) => {
-            const video = e.currentTarget
-            if (video.duration && isFinite(video.duration)) {
-              onDurationResolved?.(video.duration * 1000)
-            }
-          }}
-        />
-      ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={slide.content}
-          alt=""
-          className="max-h-full max-w-full rounded-lg object-contain"
-        />
-      )}
-    </div>
-  )
-}
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/80" />
 
-function StoryHeader({
-  story,
-  onClose,
-}: {
-  story: Story
-  onClose: () => void
-}) {
-  return (
-    <div className="flex items-center gap-2 px-3 pb-2 pt-1">
-      <Avatar className="h-8 w-8">
-        <AvatarImage src={story.companionAvatarUrl} alt={story.companionName} />
-        <AvatarFallback>{story.companionName[0]}</AvatarFallback>
-      </Avatar>
-      <span className="flex-1 text-sm font-medium text-white">{story.companionName}</span>
+      {/* Sizing reference */}
+      <div
+        ref={measureRef}
+        className="pointer-events-none invisible absolute"
+        style={{ width: "min(85vw, 400px)" }}
+      />
+
+      {/* Cards */}
+      {stories.map((story, i) => {
+        const offset = i - activeStoryIndex
+        const isActive = offset === 0
+        const distance = Math.abs(offset)
+        const scale = isActive ? 1 : Math.max(0.78, 1 - distance * 0.1)
+        const opacity = isActive ? 1 : Math.max(0.4, 1 - distance * 0.25)
+
+        return (
+          <div
+            key={story.id}
+            className={cn(
+              "absolute top-1/2 left-1/2 transition-all duration-400 ease-out",
+              isVisible ? "scale-100" : "scale-90",
+            )}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(85vw, 400px)",
+              height: "min(90dvh, 720px)",
+              transform: `translate(-50%, -50%) translateX(${offset * step}px) scale(${scale})`,
+              opacity,
+              zIndex: isActive ? 10 : 5 - distance,
+            }}
+          >
+            {isActive ? (
+              <ActiveStoryCard
+                story={story}
+                slideIndex={activeSlideIndex}
+                progress={progress}
+                isPaused={isPaused}
+                onTapLeft={goPrev}
+                onTapRight={goNext}
+                onSwipeLeft={handleSwipeLeft}
+                onSwipeRight={handleSwipeRight}
+                onReact={react}
+                onPause={pauseTimer}
+                onResume={resumeTimer}
+                onDurationResolved={setActiveSlideDuration}
+              />
+            ) : (
+              <PreviewStoryCard
+                story={story}
+                onClick={() => goToStory(i)}
+              />
+            )}
+          </div>
+        )
+      })}
+
+      {/* Close button */}
       <button
-        onClick={onClose}
-        className="rounded-full p-1 text-white/80 transition-colors hover:text-white"
+        className="absolute right-4 top-4 z-50 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+        onClick={close}
       >
         <X className="h-5 w-5" />
       </button>
-    </div>
-  )
-}
-
-function ReactionBar({ onReact }: { onReact: (emoji: string) => void }) {
-  return (
-    <div className="flex justify-center gap-4 pb-6 pt-3">
-      {REACTIONS.map((emoji) => (
-        <button
-          key={emoji}
-          onClick={() => onReact(emoji)}
-          className="text-2xl transition-transform active:scale-125"
-        >
-          {emoji}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-const SWIPE_THRESHOLD = 50
-const HOLD_DELAY = 200
-
-function GestureArea({
-  onNext,
-  onPrev,
-  onPause,
-  onResume,
-  children,
-}: {
-  onNext: () => void
-  onPrev: () => void
-  onPause?: () => void
-  onResume?: () => void
-  children: React.ReactNode
-}) {
-  const pointerStartRef = useRef<{ x: number; y: number; time: number } | null>(null)
-  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isHoldingRef = useRef(false)
-
-  function handlePointerDown(e: React.PointerEvent) {
-    pointerStartRef.current = { x: e.clientX, y: e.clientY, time: Date.now() }
-    isHoldingRef.current = false
-
-    holdTimerRef.current = setTimeout(() => {
-      isHoldingRef.current = true
-      onPause?.()
-    }, HOLD_DELAY)
-  }
-
-  function handlePointerUp(e: React.PointerEvent) {
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current)
-      holdTimerRef.current = null
-    }
-
-    if (isHoldingRef.current) {
-      isHoldingRef.current = false
-      onResume?.()
-      return
-    }
-
-    const start = pointerStartRef.current
-    if (!start) return
-
-    const dx = e.clientX - start.x
-    const dy = e.clientY - start.y
-
-    // Horizontal swipe detection
-    if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
-      if (dx < 0) onNext()
-      else onPrev()
-      return
-    }
-
-    // Tap: left third = prev, right two-thirds = next
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    const tapX = e.clientX - rect.left
-    if (tapX < rect.width / 3) {
-      onPrev()
-    } else {
-      onNext()
-    }
-  }
-
-  function handlePointerCancel() {
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current)
-      holdTimerRef.current = null
-    }
-    if (isHoldingRef.current) {
-      isHoldingRef.current = false
-      onResume?.()
-    }
-  }
-
-  return (
-    <div
-      className="relative flex flex-1 overflow-hidden touch-pan-y"
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerCancel}
-      onPointerLeave={handlePointerCancel}
-    >
-      {children}
-    </div>
-  )
-}
-
-export function StoryViewer({
-  isOpen,
-  story,
-  slide,
-  slideIndex,
-  progress,
-  isPaused,
-  onClose,
-  onNext,
-  onPrev,
-  onReact,
-  onPause,
-  onResume,
-  onDurationResolved,
-}: {
-  isOpen: boolean
-  story: Story | null
-  slide: StorySlide | null
-  slideIndex: number
-  progress: number
-  isPaused?: boolean
-  onClose: () => void
-  onNext: () => void
-  onPrev: () => void
-  onReact: (emoji: string) => void
-  onPause?: () => void
-  onResume?: () => void
-  onDurationResolved?: (durationMs: number) => void
-}) {
-  if (!story || !slide) return null
-
-  return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex h-dvh max-h-dvh w-screen max-w-none flex-col gap-0 border-0 bg-black p-0 sm:max-w-sm sm:rounded-xl [&>button]:hidden">
-        <DialogTitle className="sr-only">{story.companionName}&apos;s story</DialogTitle>
-
-        <ProgressBars
-          total={story.slides.length}
-          current={slideIndex}
-          progress={progress}
-          isPaused={isPaused}
-        />
-
-        <StoryHeader story={story} onClose={onClose} />
-
-        <GestureArea
-          onNext={onNext}
-          onPrev={onPrev}
-          onPause={onPause}
-          onResume={onResume}
-        >
-          <SlideContent
-            key={`${story.id}-${slideIndex}`}
-            slide={slide}
-            isPaused={isPaused}
-            onDurationResolved={onDurationResolved}
-          />
-        </GestureArea>
-
-        <ReactionBar onReact={onReact} />
-      </DialogContent>
-    </Dialog>
+    </div>,
+    document.body,
   )
 }

@@ -7,6 +7,9 @@ export async function reactToStory(
   mediaId: string,
   emoji: string,
 ): Promise<void> {
+  // Skip API call for mock stories
+  if (storyId.startsWith("mock-")) return
+
   const reaction = REACTION_MAP[emoji] ?? "love"
   await fetchApi(`/stories/${storyId}/react`, {
     method: "POST",

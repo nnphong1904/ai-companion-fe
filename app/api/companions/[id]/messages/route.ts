@@ -8,8 +8,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const messages = await getMessages(id)
-    return NextResponse.json({ data: messages })
+    const data = await getMessages(id)
+    return NextResponse.json({ data })
   } catch (error) {
     const status = error instanceof ApiError ? error.status : 500
     const message = error instanceof Error ? error.message : "Failed to get messages"

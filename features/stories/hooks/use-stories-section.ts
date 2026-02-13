@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 import { useStoriesViewer } from "./use-stories"
 import { reactToStory } from "@/features/stories/actions"
 import type { Story } from "../types"
@@ -16,7 +17,9 @@ export function useStoriesSection(initialStories: Story[]) {
       )
     },
     onReact: (storyId, slideId, emoji) => {
-      reactToStory(storyId, slideId, emoji)
+      reactToStory(storyId, slideId, emoji).catch(() => {
+        toast.error("Failed to send reaction")
+      })
     },
   })
 

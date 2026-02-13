@@ -24,6 +24,23 @@ export async function sendMessage(
   }
 }
 
+export async function loadMoreMessages(
+  companionId: string,
+  cursor: string,
+): Promise<{ messages: Message[]; nextCursor: string | null; hasMore: boolean }> {
+  const data = await fetchApi<{
+    messages: BackendMessage[]
+    next_cursor: string
+    has_more: boolean
+  } | null>(`/companions/${companionId}/messages?cursor=${encodeURIComponent(cursor)}&limit=20`)
+  const messages = (data?.messages ?? []).map(transformMessage).reverse()
+  return {
+    messages,
+    nextCursor: data?.has_more ? data.next_cursor : null,
+    hasMore: data?.has_more ?? false,
+  }
+}
+
 export async function saveMemory(
   companionId: string,
   content: string,

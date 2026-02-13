@@ -11,21 +11,7 @@ export function StoriesSection({ initialStories }: { initialStories: Story[] }) 
   return (
     <>
       <StoriesRow stories={stories} onOpenStory={viewer.open} />
-      <StoryViewer
-        isOpen={viewer.isOpen}
-        story={viewer.activeStory}
-        slide={viewer.activeSlide}
-        slideIndex={viewer.activeSlideIndex}
-        progress={viewer.progress}
-        isPaused={viewer.isPaused}
-        onClose={viewer.close}
-        onNext={viewer.goNext}
-        onPrev={viewer.goPrev}
-        onReact={viewer.react}
-        onPause={viewer.pauseTimer}
-        onResume={viewer.resumeTimer}
-        onDurationResolved={viewer.setActiveSlideDuration}
-      />
+      <StoryViewer viewer={viewer} />
     </>
   )
 }

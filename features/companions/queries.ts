@@ -33,6 +33,33 @@ export async function getMyCompanions(): Promise<Companion[]> {
     .map((c) => transformCompanion(c, relMap.get(c.id)))
 }
 
+/**
+ * Single fetch for dashboard — avoids redundant /companions + /relationships calls.
+ */
+export async function getDashboardCompanions(): Promise<{
+  myCompanions: Companion[]
+  allCompanions: Companion[]
+}> {
+  const [companions, relationships] = await Promise.all([
+    fetchApi<BackendCompanion[] | null>("/companions"),
+    fetchApi<BackendRelationship[] | null>("/relationships").catch(() => null),
+  ])
+
+  const rels = relationships ?? []
+  const relMap = new Map(rels.map((r) => [r.companion_id, r]))
+
+  const allCompanions = (companions ?? []).map((c) =>
+    transformCompanion(c, relMap.get(c.id)),
+  )
+
+  const myCompanions =
+    rels.length === 0
+      ? []
+      : allCompanions.filter((c) => relMap.has(c.id))
+
+  return { myCompanions, allCompanions }
+}
+
 export async function getCompanion(id: string): Promise<Companion | null> {
   let companion: BackendCompanion
   try {
