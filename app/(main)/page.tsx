@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { CompanionsGrid } from "@/features/companions"
+import { CompanionsGrid, CompanionConstellation } from "@/features/companions"
 import { CompanionCardSkeleton } from "@/features/companions"
 import { StoriesSection } from "@/features/stories"
 import { StoryRowSkeleton } from "@/features/stories"
@@ -11,6 +11,16 @@ async function StoriesBlock() {
   const stories = await getStories().catch(() => [])
   if (stories.length === 0) return null
   return <StoriesSection initialStories={stories} />
+}
+
+async function ConstellationBlock() {
+  const token = await getAuthToken()
+  if (!token) return null
+
+  const { myCompanions } = await getDashboardCompanions()
+  if (myCompanions.length < 2) return null
+
+  return <CompanionConstellation companions={myCompanions} />
 }
 
 async function CompanionsBlock() {
@@ -61,6 +71,10 @@ export default function DashboardPage() {
 
       <Suspense fallback={<StoryRowSkeleton />}>
         <StoriesBlock />
+      </Suspense>
+
+      <Suspense>
+        <ConstellationBlock />
       </Suspense>
 
       <Suspense fallback={<CompanionsGridSkeleton />}>

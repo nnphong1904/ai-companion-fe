@@ -24,13 +24,13 @@ Package manager is **Bun**. Use `bunx shadcn add <component>` to add shadcn/ui c
 Uses Next.js App Router with route groups to separate auth and authenticated layouts:
 
 - `(auth)/` — login, signup (centered card layout, no nav)
-- `(main)/` — dashboard, companions/[id], chat/[id], memories/[id] (app shell with bottom nav)
+- `(main)/` — dashboard, companions/[id], chat/[id], memories/[id], insights/[id] (app shell with bottom nav)
 - Root layout applies dark class, AuthProvider, Toaster
 
 ### Key Layers
 
 - **`types/`** — All shared TypeScript types (User, Companion, Story, Message, Memory, Mood)
-- **`lib/api.ts`** — API layer (currently returns mock data via `lib/mock-data.ts`). All data fetching goes through here.
+- **`lib/api-fetch.ts`** — Centralized API layer with `fetchApi<T>()`, backend types, and transforms. All data fetching goes through here.
 - **`lib/mood.ts`** — Mood config (emoji, label, colors) and relationship level labels
 - **`lib/format.ts`** — Date formatting utilities
 - **`hooks/`** — Client-side state hooks:
@@ -42,7 +42,7 @@ Uses Next.js App Router with route groups to separate auth and authenticated lay
 
 ### Data Flow
 
-All pages are client components that fetch via `lib/api.ts`. To swap in a real backend, replace the mock implementations in `api.ts` — the component layer doesn't change.
+Server components fetch data via feature-scoped query files (e.g., `features/companions/queries.ts`) which call `fetchApi()`. Data is transformed from backend snake_case to frontend camelCase. Client components receive initial data as props and use hooks for mutations.
 
 ### Patterns
 
@@ -125,6 +125,20 @@ Configured in `components.json`:
   - PATCH /api/memories/:id/pin → { data: Memory } (toggles pinned)
 
   Memory: { id, user_id, companion_id, content, tag?, pinned, created_at }
+
+  ## Anonymous Browsing
+  - GET /api/browse/companions → { data: Companion[] } (no auth required)
+  - GET /api/browse/companions/:id → { data: Companion } (no auth required)
+
+  ## Insights
+  - GET /api/companions/:id/insights → { data: InsightsResponse }
+
+  InsightsResponse: {
+    mood_history: [{ date, mood_score, mood_label }],
+    streak: { current, longest },
+    milestones: [{ key, title, description, achieved }],
+    stats: { total_messages, total_memories, first_message, days_together }
+  }
 
   ## Response Format
   - Success: { data: ... }

@@ -1,6 +1,6 @@
 "use client"
 
-import { BookOpen, MessageCircle } from "lucide-react"
+import { BookOpen, MessageCircle, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -57,6 +57,17 @@ export function CompanionProfileContent({
           </Button>
         ) : null}
       </div>
+      {isAuthenticated ? (
+        <Button asChild variant="outline" size="sm" className="w-full max-w-xs">
+          <Link
+            href={`/insights/${companion.id}`}
+            onClick={onNavigate ? (e) => { e.preventDefault(); onNavigate(`/insights/${companion.id}`) } : undefined}
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            Relationship Insights
+          </Link>
+        </Button>
+      ) : null}
     </div>
   )
 }
