@@ -8,7 +8,11 @@ import { getStories } from "@/features/stories/queries"
 import { getAuthToken } from "@/lib/api-fetch"
 
 async function StoriesBlock() {
-  const stories = await getStories().catch(() => [])
+  const stories = await getStories().catch((e) => {
+    console.error("[StoriesBlock] getStories failed:", e)
+    return []
+  })
+  console.log("[StoriesBlock] stories count:", stories.length)
   if (stories.length === 0) return null
   return <StoriesSection initialStories={stories} />
 }

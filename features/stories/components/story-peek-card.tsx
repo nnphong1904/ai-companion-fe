@@ -22,6 +22,14 @@ export function StoryPeekCard({ story }: { story: Story }) {
               {slide.content}
             </p>
           </div>
+        ) : slide.type === "video" ? (
+          <video
+            src={slide.content}
+            muted
+            playsInline
+            preload="metadata"
+            className="h-full w-full object-cover"
+          />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={slide.content} alt="" className="h-full w-full object-cover" />

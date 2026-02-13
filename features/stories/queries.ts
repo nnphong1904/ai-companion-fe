@@ -1,31 +1,47 @@
-import "server-only";
+import "server-only"
 import {
   fetchApi,
   transformStory,
   type BackendStory,
   type BackendCompanion,
-} from "@/lib/api-fetch";
-import type { Story } from "@/features/stories/types";
-import { buildMockStories } from "./mock-data";
+  type BackendRelationship,
+} from "@/lib/api-fetch"
+import type { Story } from "@/features/stories/types"
+import { buildMockStories } from "./mock-data"
+
+type StoriesPage = {
+  stories: BackendStory[]
+  next_cursor?: string
+  has_more: boolean
+}
 
 export async function getStories(): Promise<Story[]> {
-  const [stories, companions] = await Promise.all([
-    fetchApi<BackendStory[] | null>("/stories"),
-    fetchApi<BackendCompanion[] | null>("/companions"),
-  ]);
+  const [page, companions, relationships] = await Promise.all([
+    fetchApi<StoriesPage | null>("/stories").catch(() => null),
+    fetchApi<BackendCompanion[] | null>("/companions").catch(() => null),
+    fetchApi<BackendRelationship[] | null>("/relationships").catch(() => null),
+  ])
 
-  console.log("stories", stories);
+  const stories = page?.stories ?? []
+  const companionList = companions ?? []
 
-  const companionList = companions ?? [];
+  // Filter stories to only the user's selected companions
+  const myCompanionIds = relationships
+    ? new Set(relationships.map((r) => r.companion_id))
+    : null
 
-  // If backend has real stories, use them
-  if (stories && stories.length > 0) {
-    const companionMap = new Map(companionList.map((c) => [c.id, c]));
-    return stories.map((s) =>
-      transformStory(s, companionMap.get(s.companion_id)),
-    );
+  const filteredStories = myCompanionIds
+    ? stories.filter((s) => myCompanionIds.has(s.companion_id))
+    : stories
+
+  if (filteredStories.length > 0) {
+    const companionMap = new Map(companionList.map((c) => [c.id, c]))
+    return filteredStories.map((s) => transformStory(s, companionMap.get(s.companion_id)))
   }
 
-  // Fallback to mock stories built from real companion data
-  return buildMockStories(companionList);
+  // Fallback to mock stories built from user's companion data
+  const myCompanions = myCompanionIds
+    ? companionList.filter((c) => myCompanionIds.has(c.id))
+    : companionList
+  return buildMockStories(myCompanions)
 }

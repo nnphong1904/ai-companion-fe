@@ -29,6 +29,14 @@ export function PreviewStoryCard({ story, onClick }: { story: Story; onClick: ()
           <p className="line-clamp-3 text-center text-sm font-medium leading-relaxed text-white/90">
             {slide.content}
           </p>
+        ) : slide.type === "video" ? (
+          <video
+            src={slide.content}
+            muted
+            playsInline
+            preload="metadata"
+            className="h-full w-full object-cover"
+          />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={slide.content} alt="" className="h-full w-full object-cover" />

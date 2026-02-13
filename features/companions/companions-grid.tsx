@@ -4,7 +4,6 @@ import { useState, useTransition } from "react"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -53,41 +52,25 @@ export function CompanionsGrid({
 
   return (
     <section className="px-4">
-      <h2 className="mb-3 text-sm font-medium text-muted-foreground">Your Companions</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {companions.map((companion) => (
-          <CompanionCard key={companion.id} companion={companion} />
-        ))}
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-medium text-muted-foreground">Your Companions</h2>
+
         {available.length > 0 && !isAuthenticated ? (
-          <Link href="/login">
-            <Card className="group h-full cursor-pointer border-dashed transition-colors hover:bg-accent/50">
-              <CardContent className="flex flex-col items-center justify-center gap-3 p-5 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary/10">
-                  <Plus className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="font-semibold leading-none">Log in to Add</h3>
-                  <p className="text-xs text-muted-foreground">Sign in to connect with companions</p>
-                </div>
-              </CardContent>
-            </Card>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Log in to Add
           </Link>
         ) : null}
+
         {available.length > 0 && isAuthenticated ? (
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) setSelectedIds(new Set()) }}>
             <DialogTrigger asChild>
-              <button className="text-left">
-                <Card className="group h-full cursor-pointer border-dashed transition-colors hover:bg-accent/50">
-                  <CardContent className="flex flex-col items-center justify-center gap-3 p-5 text-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted transition-colors group-hover:bg-primary/10">
-                      <Plus className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="font-semibold leading-none">Add Companion</h3>
-                      <p className="text-xs text-muted-foreground">Connect with someone new</p>
-                    </div>
-                  </CardContent>
-                </Card>
+              <button className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary">
+                <Plus className="h-3.5 w-3.5" />
+                Add
               </button>
             </DialogTrigger>
             <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-md">
@@ -122,6 +105,12 @@ export function CompanionsGrid({
             </DialogContent>
           </Dialog>
         ) : null}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {companions.map((companion) => (
+          <CompanionCard key={companion.id} companion={companion} />
+        ))}
       </div>
     </section>
   )

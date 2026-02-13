@@ -49,21 +49,33 @@ export async function fetchApi<T>(
     headers.Authorization = `Bearer ${token}`
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
+  const url = `${API_URL}${path}`
+  console.log(`[fetchApi] ${options.method ?? "GET"} ${url} (token: ${token ? "yes" : "no"})`)
+
+  const res = await fetch(url, {
     ...options,
     headers: { ...headers, ...Object.fromEntries(new Headers(options.headers).entries()) },
   })
 
-  const json = await res.json().catch(() => ({}))
-
-  if (!res.ok) {
-    throw new ApiError(
-      (json as { error?: string }).error || `API error: ${res.status}`,
-      res.status,
-    )
+  const text = await res.text()
+  let json: unknown
+  try {
+    json = JSON.parse(text)
+  } catch {
+    console.error(`[fetchApi] ${path} — non-JSON response (${res.status}):`, text.slice(0, 200))
+    throw new ApiError(`Non-JSON response: ${res.status}`, res.status)
   }
 
-  return (json as { data: T }).data
+  if (!res.ok) {
+    const errMsg = (json as { error?: string }).error || `API error: ${res.status}`
+    console.error(`[fetchApi] ${path} — error ${res.status}:`, errMsg)
+    throw new ApiError(errMsg, res.status)
+  }
+
+  const data = (json as { data: T }).data
+  console.log(`[fetchApi] ${path} — ${res.status} OK, data:`, data === null ? "null" : Array.isArray(data) ? `array(${data.length})` : typeof data)
+
+  return data
 }
 
 // ─── Backend types ──────────────────────────────────────────────────────────
