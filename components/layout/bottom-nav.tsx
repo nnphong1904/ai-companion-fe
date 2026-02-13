@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { NAV_ITEMS, isNavActive } from "@/lib/nav-items"
-import { useAuth } from "@/features/auth"
+import { useAuth } from "@/features/auth/hooks/use-auth"
 
 export function BottomNav() {
   const pathname = usePathname()

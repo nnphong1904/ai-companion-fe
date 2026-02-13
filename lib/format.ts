@@ -13,14 +13,14 @@ export function formatRelativeTime(isoDate: string): string {
   const days = Math.floor(hours / 24)
   if (days < 7) return `${days}d ago`
 
-  return new Date(isoDate).toLocaleDateString("en-US", {
+  return new Date(isoDate).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
   })
 }
 
 export function formatDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString("en-US", {
+  return new Date(isoDate).toLocaleDateString(undefined, {
     month: "long",
     day: "numeric",
     year: "numeric",

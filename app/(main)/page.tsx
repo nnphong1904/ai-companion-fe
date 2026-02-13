@@ -1,12 +1,14 @@
 import { Suspense } from "react";
-import {
-  CompanionsGrid,
-  CompanionConstellation,
-  HeroCompanionCard,
-} from "@/features/companions";
-import { CompanionCardSkeleton } from "@/features/companions";
-import { StoriesSection } from "@/features/stories";
-import { StoryRowSkeleton } from "@/features/stories";
+import dynamic from "next/dynamic";
+import { CompanionsGrid } from "@/features/companions/companions-grid";
+import { HeroCompanionCard } from "@/features/companions/hero-companion-card";
+
+const CompanionConstellation = dynamic(
+  () => import("@/features/companions/companion-constellation").then((m) => m.CompanionConstellation),
+);
+import { CompanionCardSkeleton } from "@/features/companions/companion-card-skeleton";
+import { StoriesSection } from "@/features/stories/components/stories-section";
+import { StoryRowSkeleton } from "@/features/stories/components/story-row-skeleton";
 import { CompanionAutoOpen } from "@/components/companion-auto-open";
 import { Skeleton } from "@/components/ui/skeleton";
 import {

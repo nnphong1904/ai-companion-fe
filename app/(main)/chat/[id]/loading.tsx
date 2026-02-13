@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton"
-import { ChatSkeleton } from "@/features/chat"
+import { ChatSkeleton } from "@/features/chat/components/chat-skeleton"
 
 export default function ChatDetailLoading() {
   return (

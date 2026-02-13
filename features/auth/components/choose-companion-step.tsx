@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { CompanionPickCard } from "@/features/companions"
+import { CompanionPickCard } from "@/features/companions/companion-pick-card"
 import { selectCompanions } from "@/features/companions/actions"
 import type { Companion } from "@/types/shared"
 

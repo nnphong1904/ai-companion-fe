@@ -1,6 +1,5 @@
-import { BottomNav, DesktopSidebar } from "@/components/layout"
-
-export const dynamic = "force-dynamic"
+import { BottomNav } from "@/components/layout/bottom-nav"
+import { DesktopSidebar } from "@/components/layout/desktop-sidebar"
 
 export default function MainLayout({
   children,

@@ -1,7 +1,20 @@
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { ChatRoom } from "@/features/chat"
+import { ChatRoom } from "@/features/chat/components/chat-room"
 import { getCompanion } from "@/features/companions/queries"
 import { getMessages } from "@/features/chat/queries"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const companion = await getCompanion(id)
+  return {
+    title: companion ? `Chat with ${companion.name}` : "Chat",
+  }
+}
 
 export default async function ChatPage({
   params,

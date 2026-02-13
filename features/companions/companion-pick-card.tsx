@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
-import { MoodBadge } from "@/features/mood"
+import { MoodBadge } from "@/features/mood/components/mood-badge"
 import { cn } from "@/lib/utils"
 import type { Companion } from "@/types/shared"
 

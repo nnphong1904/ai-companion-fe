@@ -17,12 +17,13 @@ export function useViewerLayout(isOpen: boolean) {
   // Detect layout on open + listen for resize
   useEffect(() => {
     if (!isOpen) return
-    setIsDesktop(window.innerWidth >= MD_BREAKPOINT)
     function onResize() {
       setIsDesktop(window.innerWidth >= MD_BREAKPOINT)
       if (measureRef.current) setCardWidth(measureRef.current.offsetWidth)
     }
     window.addEventListener("resize", onResize)
+    // Fire once immediately to set initial value
+    onResize()
     return () => window.removeEventListener("resize", onResize)
   }, [isOpen])
 

@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { ChooseCompanionStep, WelcomeStep } from "@/features/auth"
+import { WelcomeStep } from "@/features/auth/components/welcome-step"
+import { ChooseCompanionStep } from "@/features/auth/components/choose-companion-step"
 import { cn } from "@/lib/utils"
 import type { Companion } from "@/types/shared"
 

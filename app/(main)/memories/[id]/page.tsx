@@ -1,11 +1,25 @@
+import type { Metadata } from "next"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { MemoriesEmptyState, MemoriesTimeline } from "@/features/memories"
+import { MemoriesEmptyState } from "@/features/memories/components/memories-empty-state"
+import { MemoriesTimeline } from "@/features/memories/components/memories-timeline"
 import { getCompanion } from "@/features/companions/queries"
 import { getMemories } from "@/features/memories/queries"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const companion = await getCompanion(id)
+  return {
+    title: companion ? `${companion.name} — Memories` : "Memories",
+  }
+}
 
 export default async function MemoriesPage({
   params,

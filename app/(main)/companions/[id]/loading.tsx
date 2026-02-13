@@ -1,4 +1,4 @@
-import { CompanionProfileSkeleton } from "@/features/companions"
+import { CompanionProfileSkeleton } from "@/features/companions/companion-profile-skeleton"
 
 export default function CompanionLoading() {
   return (

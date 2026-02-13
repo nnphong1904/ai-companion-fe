@@ -56,6 +56,7 @@ export function CompanionConstellation({
           viewBox={`0 0 ${dims.w} ${dims.h}`}
           className="h-full w-full"
           style={{ width: dims.w, height: dims.h }}
+          aria-hidden
         >
           <defs>
             <filter id="star-glow">

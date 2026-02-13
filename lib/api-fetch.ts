@@ -49,7 +49,6 @@ export async function fetchApi<T>(
   }
 
   const url = `${API_URL}${path}`
-  console.log(`[fetchApi] ${options.method ?? "GET"} ${url} (token: ${token ? "yes" : "no"})`)
 
   const res = await fetch(url, {
     ...options,
@@ -61,19 +60,15 @@ export async function fetchApi<T>(
   try {
     json = JSON.parse(text)
   } catch {
-    console.error(`[fetchApi] ${path} — non-JSON response (${res.status}):`, text.slice(0, 200))
     throw new ApiError(`Non-JSON response: ${res.status}`, res.status)
   }
 
   if (!res.ok) {
     const errMsg = (json as { error?: string }).error || `API error: ${res.status}`
-    console.error(`[fetchApi] ${path} — error ${res.status}:`, errMsg)
     throw new ApiError(errMsg, res.status)
   }
 
   const data = (json as { data: T }).data
-  console.log(`[fetchApi] ${path} — ${res.status} OK, data:`, data === null ? "null" : Array.isArray(data) ? `array(${data.length})` : typeof data)
-
   return data
 }
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const AUTH_COOKIE = "auth_token"
+const AUTH_COOKIE = "auth-token"
 
 // Routes that require authentication
 const PROTECTED_PREFIXES = ["/chat/", "/memories/", "/insights/"]

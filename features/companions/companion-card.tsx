@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { BookOpen, MessageCircle, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { MOOD_MAP, getRelationshipLabel } from "@/features/mood"
+import { MOOD_MAP, getRelationshipLabel } from "@/features/mood/lib/mood"
 import { formatRelativeTime } from "@/lib/format"
 import type { Companion } from "@/types/shared"
 import type { Mood } from "@/features/mood/types"
@@ -165,54 +165,48 @@ export function CompanionCard({ companion }: { companion: Companion }) {
 
               {/* Action buttons */}
               <div className="mt-3 flex flex-wrap gap-2">
-                <div
+                <button
                   onClick={(e) => {
                     e.preventDefault()
-                    window.location.href = `/chat/${companion.id}`
+                    e.stopPropagation()
+                    router.push(`/chat/${companion.id}`)
                   }}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-all",
+                    "border-white/15 bg-white/10 text-white hover:border-white/30 hover:bg-white/20",
+                  )}
                 >
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-all",
-                      "border-white/15 bg-white/10 text-white hover:border-white/30 hover:bg-white/20",
-                    )}
-                  >
-                    <MessageCircle className="h-3 w-3" />
-                    Chat
-                  </span>
-                </div>
-                <div
+                  <MessageCircle className="h-3 w-3" />
+                  Chat
+                </button>
+                <button
                   onClick={(e) => {
                     e.preventDefault()
+                    e.stopPropagation()
                     router.push(`/companions/${companion.id}?view=memories`, { scroll: false })
                   }}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-all",
+                    "border-white/15 bg-white/10 text-white hover:border-white/30 hover:bg-white/20",
+                  )}
                 >
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-all",
-                      "border-white/15 bg-white/10 text-white hover:border-white/30 hover:bg-white/20",
-                    )}
-                  >
-                    <BookOpen className="h-3 w-3" />
-                    Memories
-                  </span>
-                </div>
-                <div
+                  <BookOpen className="h-3 w-3" />
+                  Memories
+                </button>
+                <button
                   onClick={(e) => {
                     e.preventDefault()
+                    e.stopPropagation()
                     router.push(`/companions/${companion.id}?view=insights`, { scroll: false })
                   }}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-all",
+                    "border-white/15 bg-white/10 text-white hover:border-white/30 hover:bg-white/20",
+                  )}
                 >
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-all",
-                      "border-white/15 bg-white/10 text-white hover:border-white/30 hover:bg-white/20",
-                    )}
-                  >
-                    <TrendingUp className="h-3 w-3" />
-                    Insights
-                  </span>
-                </div>
+                  <TrendingUp className="h-3 w-3" />
+                  Insights
+                </button>
               </div>
             </div>
           </div>

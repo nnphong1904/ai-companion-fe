@@ -1,5 +1,5 @@
-import { CompanionCardSkeleton } from "@/features/companions"
-import { StoryRowSkeleton } from "@/features/stories"
+import { CompanionCardSkeleton } from "@/features/companions/companion-card-skeleton"
+import { StoryRowSkeleton } from "@/features/stories/components/story-row-skeleton"
 
 export function DashboardSkeleton() {
   return (

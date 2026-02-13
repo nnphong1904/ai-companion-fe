@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton"
-import { MemorySkeleton } from "@/features/memories"
+import { MemorySkeleton } from "@/features/memories/components/memory-skeleton"
 
 export default function MemoriesLoading() {
   return (

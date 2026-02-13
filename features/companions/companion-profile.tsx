@@ -4,8 +4,8 @@ import { BookOpen, MessageCircle, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { MoodBadge } from "@/features/mood"
-import { RelationshipBar } from "@/features/mood"
+import { MoodBadge } from "@/features/mood/components/mood-badge"
+import { RelationshipBar } from "@/features/mood/components/relationship-bar"
 import type { Companion } from "@/types/shared"
 
 export function CompanionProfileContent({

@@ -1,4 +1,5 @@
 import "server-only"
+import { cache } from "react"
 import {
   fetchApi,
   ApiError,
@@ -35,11 +36,12 @@ export async function getMyCompanions(): Promise<Companion[]> {
 
 /**
  * Single fetch for dashboard — avoids redundant /companions + /relationships calls.
+ * Wrapped with React.cache() for per-request deduplication across server components.
  */
-export async function getDashboardCompanions(): Promise<{
+export const getDashboardCompanions = cache(async (): Promise<{
   myCompanions: Companion[]
   allCompanions: Companion[]
-}> {
+}> => {
   const [companions, relationships] = await Promise.all([
     fetchApi<BackendCompanion[] | null>("/companions"),
     fetchApi<BackendRelationship[] | null>("/relationships").catch(() => null),
@@ -58,7 +60,7 @@ export async function getDashboardCompanions(): Promise<{
       : allCompanions.filter((c) => relMap.has(c.id))
 
   return { myCompanions, allCompanions }
-}
+})
 
 // ─── Public (anonymous) queries via /browse ─────────────────────────────────
 
@@ -79,21 +81,17 @@ export async function getPublicCompanion(id: string): Promise<Companion | null> 
 
 // ─── Authenticated queries ──────────────────────────────────────────────────
 
-export async function getCompanion(id: string): Promise<Companion | null> {
-  let companion: BackendCompanion
-  try {
-    companion = await fetchApi<BackendCompanion>(`/companions/${id}`)
-  } catch (e) {
-    if (e instanceof ApiError && e.status === 404) return null
-    throw e
-  }
+export const getCompanion = cache(async (id: string): Promise<Companion | null> => {
+  const [companionResult, relationship] = await Promise.all([
+    fetchApi<BackendCompanion>(`/companions/${id}`).catch((e: unknown) => {
+      if (e instanceof ApiError && e.status === 404) return null
+      throw e
+    }),
+    fetchApi<BackendRelationship>(`/companions/${id}/relationship`).catch(
+      () => undefined,
+    ),
+  ])
 
-  let relationship: BackendRelationship | undefined
-  try {
-    relationship = await fetchApi<BackendRelationship>(`/companions/${id}/relationship`)
-  } catch {
-    // No relationship yet — that's fine
-  }
-
-  return transformCompanion(companion, relationship)
-}
+  if (!companionResult) return null
+  return transformCompanion(companionResult, relationship)
+})

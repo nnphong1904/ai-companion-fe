@@ -1,10 +1,23 @@
+import type { Metadata } from "next"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { CompanionInsights } from "@/features/insights"
+import { CompanionInsights } from "@/features/insights/components/companion-insights"
 import { getCompanion } from "@/features/companions/queries"
 import { getInsights } from "@/features/insights/queries"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const companion = await getCompanion(id)
+  return {
+    title: companion ? `${companion.name} — Insights` : "Insights",
+  }
+}
 
 export default async function InsightsPage({
   params,

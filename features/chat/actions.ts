@@ -61,8 +61,6 @@ export async function saveMemory(
     body.message_id = messageId;
   }
 
-  console.log("[saveMemory] payload =>", JSON.stringify(body));
-
   const data = await fetchApi<BackendMemory>(
     `/companions/${companionId}/memories`,
     {

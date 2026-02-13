@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useAuth } from "@/features/auth"
+import { useAuth } from "@/features/auth/hooks/use-auth"
 import { signupSchema, type SignupValues } from "@/features/auth/lib/schemas"
 
 export default function SignupPage() {

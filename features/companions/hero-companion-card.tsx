@@ -1,11 +1,8 @@
-"use client"
-
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { BookOpen, MessageCircle, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MOOD_MAP, getRelationshipLabel } from "@/features/mood"
+import { MOOD_MAP, getRelationshipLabel } from "@/features/mood/lib/mood"
 import { formatRelativeTime } from "@/lib/format"
 import type { Companion } from "@/types/shared"
 import type { Mood } from "@/features/mood/types"
@@ -93,7 +90,6 @@ export function HeroCompanionCard({
 }: {
   companion: Companion
 }) {
-  const router = useRouter()
   const mood = HERO_MOOD[companion.mood]
   const moodConfig = MOOD_MAP[companion.mood]
   const relationshipLabel = getRelationshipLabel(companion.relationshipLevel)
@@ -244,22 +240,27 @@ export function HeroCompanionCard({
         <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:self-center">
           <Link
             href={`/chat/${companion.id}`}
+            aria-label={`Chat with ${companion.name}`}
             className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:border-white/20 hover:bg-white/10 sm:h-9 sm:w-9"
           >
             <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Link>
-          <button
-            onClick={() => router.push(`/companions/${companion.id}?view=memories`, { scroll: false })}
+          <Link
+            href={`/companions/${companion.id}?view=memories`}
+            scroll={false}
+            aria-label={`View memories with ${companion.name}`}
             className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:border-white/20 hover:bg-white/10 sm:h-9 sm:w-9"
           >
             <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          </button>
-          <button
-            onClick={() => router.push(`/companions/${companion.id}?view=insights`, { scroll: false })}
+          </Link>
+          <Link
+            href={`/companions/${companion.id}?view=insights`}
+            scroll={false}
+            aria-label={`View insights for ${companion.name}`}
             className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:border-white/20 hover:bg-white/10 sm:h-9 sm:w-9"
           >
             <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          </button>
+          </Link>
         </div>
       </div>
     </div>
