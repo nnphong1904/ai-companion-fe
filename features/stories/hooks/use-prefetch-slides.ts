@@ -1,11 +1,15 @@
 "use client"
 
 import { useEffect } from "react"
+import { preload } from "react-dom"
 import type { Story } from "../types"
 
 /**
  * Speculatively prefetches the next slide (and next story's first slide)
  * so assets are cached before auto-advance fires.
+ *
+ * Uses React's built-in preload() API (React 19+) which integrates with
+ * Next.js to inject <link rel="preload"> into <head> without manual DOM manipulation.
  */
 export function usePrefetchSlides(
   stories: Story[],
@@ -18,12 +22,10 @@ export function usePrefetchSlides(
     const story = stories[activeStoryIndex]
     if (!story) return
 
-    const targets: string[] = []
-
     // Next slide in current story
     const nextSlide = story.slides[activeSlideIndex + 1]
     if (nextSlide && nextSlide.type !== "text") {
-      targets.push(nextSlide.content)
+      preload(nextSlide.content, { as: nextSlide.type === "video" ? "video" : "image" })
     }
 
     // If on last slide, prefetch next story's first slide
@@ -31,13 +33,8 @@ export function usePrefetchSlides(
       const nextStory = stories[activeStoryIndex + 1]
       const firstSlide = nextStory?.slides[0]
       if (firstSlide && firstSlide.type !== "text") {
-        targets.push(firstSlide.content)
+        preload(firstSlide.content, { as: firstSlide.type === "video" ? "video" : "image" })
       }
-    }
-
-    for (const url of targets) {
-      const img = new Image()
-      img.src = url
     }
   }, [activeStoryIndex, activeSlideIndex, stories])
 }
